@@ -3,20 +3,23 @@ import hashlib
 import json
 import secrets
 import string
+from pprint import pprint
 
 import pandas as pd
 import requests
 
-CLIENT_ID = "57fa927c1f0b426b9419be5de3874bfa"  # wprowadź Client_ID aplikacji
-CLIENT_SECRET = "tNlus0WGLDa52dLwSAnkmOgTCuVCp8Bz9Y9DdUjBUyuj5TJKhGqX92Hk3mIK4iyZ"  # wprowadź Client_Secret aplikacji
+CLIENT_ID = ""  # wprowadź Client_ID aplikacji
+CLIENT_SECRET = ""  # wprowadź Client_Secret aplikacji
 REDIRECT_URI = "http://localhost:8000"  # wprowadź redirect_uri
 AUTH_URL = "https://allegro.pl.allegrosandbox.pl/auth/oauth/authorize"
 TOKEN_URL = "https://allegro.pl.allegrosandbox.pl/auth/oauth/token"
 PRODUCTS_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/products"
-CATEGORIES_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/categories/{categoryId}/product-parameters"
+ALL_CATEGORIES_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/categories"
+OFFER_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/offers/{offerId}"
+OFFERS_URL = "https://api.allegro.pl.allegrosandbox.pl/offers/listing"
+CATEGORIES_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/categories/{categoryId}/parameters"
 PARTICULAR_PRODUCT_URL = "https://api.allegro.pl.allegrosandbox.pl/sale/products/{productId}"
 LAPTOP_CATEGORY = '491'
-
 
 def generate_code_verifier():
     code_verifier = ''.join((secrets.choice(string.ascii_letters) for i in range(40)))
@@ -52,7 +55,7 @@ def get_access_token(authorization_code, code_verifier):
         raise SystemExit(err)
 
 
-def get_parameters(token, category_id=LAPTOP_CATEGORY):
+def get_category_parameters(token, category_id=LAPTOP_CATEGORY):
     try:
         headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
         params = {
@@ -66,7 +69,50 @@ def get_parameters(token, category_id=LAPTOP_CATEGORY):
         raise SystemExit(err)
 
 
-def get_particular_product(token, category_id=LAPTOP_CATEGORY, productId=''):
+def get_categories(token):
+    try:
+        headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
+        products_result = requests.get(ALL_CATEGORIES_URL, headers=headers, verify=False)
+        return json.loads(products_result.text)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def get_offer(token, category_id=LAPTOP_CATEGORY, offerId=''):
+    try:
+        headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
+        params = {
+            "category.id": category_id,
+            "phrase": "laptop",
+        }
+        products_result = requests.get(OFFER_URL.replace("{offerId}", offerId), headers=headers,
+                                       params=params, verify=False)
+        return json.loads(products_result.text)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def get_offers(token, category_id=LAPTOP_CATEGORY):
+    try:
+        headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
+        params = {
+            "category.id": category_id,
+            "phrase": "laptop",
+            "parameter.11323": "11323_1"
+        }
+        products_result = requests.get(OFFERS_URL, headers=headers, params=params, verify=False)
+        return json.loads(products_result.text)
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def get_items_from_offers(offers):
+    items = dict()
+    if offers['items'] is not None:
+        pass
+
+
+def get_product_by_id(token, category_id=LAPTOP_CATEGORY, productId=''):
     try:
         headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
         params = {
@@ -80,7 +126,7 @@ def get_particular_product(token, category_id=LAPTOP_CATEGORY, productId=''):
         raise SystemExit(err)
 
 
-def normalise_parameters(api_response):
+def create_params_dict(api_response):
     parameters_dict = dict()
     for param in api_response['parameters']:
         if param['name'] is not None:
@@ -94,7 +140,7 @@ def get_products_page(token, category_id=LAPTOP_CATEGORY, page_id=''):
         headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
         params = {
             "category.id": category_id,
-            "phrase": "laptop",
+            "phrase": "laptopy",
             "page.id": page_id
         }
         products_result = requests.get(PRODUCTS_URL, headers=headers, params=params, verify=False)
@@ -110,12 +156,14 @@ def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
         products = products_response['products']
         products_pages.append(products)
     page_id = get_next_page(products_response)
+    """
     while page_id is not None:
         products_response = get_products_page(access_token, category_id, page_id)
         if products_response['products'] is not None:
             products = products_response['products']
             products_pages.append(products)
         page_id = get_next_page(products_response)
+    """
     return products_pages
 
 
@@ -131,8 +179,7 @@ def normalise_products(access_token, products_pages, parameters):
             data['ID'].append(product['id'])
             data['Name'].append(product['name'])
 
-            # pprint(get_particular_product(access_token, LAPTOP_CATEGORY, product['id']))
-
+            # pprint(get_product_by_id(access_token, LAPTOP_CATEGORY, product['id']))
             null_collumns = list(parameters.keys())
             if product['parameters'] is not None:
                 product_parameters = product['parameters']
@@ -178,12 +225,19 @@ def main():
     response = get_access_token(authorization_code, code_verifier)
     access_token = response['access_token']
     print(f"access token = {access_token}")
-    parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
+    # pprint(get_offers(access_token, LAPTOP_CATEGORY))
+    # pprint(get_offer(access_token, LAPTOP_CATEGORY, "7693390861"))
+    pprint(get_offers(access_token, LAPTOP_CATEGORY))
+    # 7693390861
+    # 7693614879
+    """
+    parameters = create_params_dict(get_category_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
+    # pprint(products)
     data = normalise_products(access_token, products, parameters)
     print_product_console(data)
     dump_to_xlsx(data)
-
+    """
 
 if __name__ == "__main__":
     main()
