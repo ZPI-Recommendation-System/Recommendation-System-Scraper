@@ -7,6 +7,20 @@ Base = declarative_base()
 metadata = Base.metadata
 
 
+class BenchmarkEntity(Base):
+    __tablename__ = 'benchmark_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('benchmark_entity_id_seq'::regclass)"))
+    type = Column(String, nullable=False)
+    partNumber = Column(String, nullable=False)
+    brand = Column(String, nullable=False)
+    model = Column(String, nullable=False)
+    rank = Column(String, nullable=False)
+    benchmark = Column(String, nullable=False)
+    samples = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+
+
 class CommunicationEntity(Base):
     __tablename__ = 'communication_entity'
 
@@ -84,6 +98,18 @@ class StorageEntity(Base):
     driveStorage = Column(Integer, nullable=False)
     driveType = Column(String, nullable=False)
     hddSpeed = Column(String)
+
+
+class UserEntity(Base):
+    __tablename__ = 'user_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('user_entity_id_seq'::regclass)"))
+    username = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    surname = Column(String, nullable=False)
 
 
 class ModelEntity(Base):
