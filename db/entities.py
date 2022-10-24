@@ -12,13 +12,11 @@ class BenchmarkEntity(Base):
 
     id = Column(Integer, primary_key=True, server_default=text("nextval('benchmark_entity_id_seq'::regclass)"))
     type = Column(String, nullable=False)
-    partNumber = Column(String, nullable=False)
     brand = Column(String, nullable=False)
     model = Column(String, nullable=False)
-    rank = Column(String, nullable=False)
-    benchmark = Column(String, nullable=False)
-    samples = Column(String, nullable=False)
     url = Column(String, nullable=False)
+    benchmark = Column(Float(53), nullable=False)
+    samples = Column(Integer, nullable=False)
 
 
 class CommunicationEntity(Base):
@@ -45,27 +43,25 @@ class ControlEntity(Base):
     model_entity = relationship('ModelEntity', secondary='model_entity_controls_control_entity')
 
 
-class GraphicsEntity(Base):
-    __tablename__ = 'graphics_entity'
+class DriveTypeEntity(Base):
+    __tablename__ = 'drive_type_entity'
 
-    graphicsCardModel = Column(String, primary_key=True)
-    graphicsCardType = Column(String)
-    graphicsCardVRam = Column(Integer)
+    driveType = Column(String, primary_key=True)
+
+    model_entity = relationship('ModelEntity', secondary='model_entity_drives_drive_type_entity')
+
+
+class ModelImgEntity(Base):
+    __tablename__ = 'model_img_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('model_img_entity_id_seq'::regclass)"))
+    url = Column(String, nullable=False)
 
 
 class MultimediaEntity(Base):
     __tablename__ = 'multimedia_entity'
 
     multimediaName = Column(String, primary_key=True)
-
-
-class ProcessorEntity(Base):
-    __tablename__ = 'processor_entity'
-
-    model = Column(String, primary_key=True)
-    series = Column(String, nullable=False)
-    cores = Column(Integer, nullable=False)
-    frequency = Column(Float(53), nullable=False)
 
 
 class RamEntity(Base):
@@ -82,7 +78,7 @@ class RamEntity(Base):
 class ScreenEntity(Base):
     __tablename__ = 'screen_entity'
 
-    screenId = Column(Integer, primary_key=True, server_default=text("nextval('\"screen_entity_screenId_seq\"'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text("nextval('screen_entity_id_seq'::regclass)"))
     diagonalScreenInches = Column(Float(53), nullable=False)
     resolution = Column(String, nullable=False)
     screenFinish = Column(String, nullable=False)
@@ -112,6 +108,31 @@ class UserEntity(Base):
     surname = Column(String, nullable=False)
 
 
+class GraphicsEntity(Base):
+    __tablename__ = 'graphics_entity'
+
+    graphicsCardModel = Column(String, nullable=False)
+    graphicsCardType = Column(String)
+    graphicsCardVRam = Column(Integer)
+    id = Column(Integer, primary_key=True, server_default=text("nextval('graphics_entity_id_seq'::regclass)"))
+    benchmarkId = Column(ForeignKey('benchmark_entity.id'))
+
+    benchmark_entity = relationship('BenchmarkEntity')
+
+
+class ProcessorEntity(Base):
+    __tablename__ = 'processor_entity'
+
+    model = Column(String, nullable=False)
+    series = Column(String, nullable=False)
+    cores = Column(Integer, nullable=False)
+    frequency = Column(Float(53), nullable=False)
+    id = Column(Integer, primary_key=True, server_default=text("nextval('processor_entity_id_seq'::regclass)"))
+    benchmarkId = Column(ForeignKey('benchmark_entity.id'))
+
+    benchmark_entity = relationship('BenchmarkEntity')
+
+
 class ModelEntity(Base):
     __tablename__ = 'model_entity'
 
@@ -119,7 +140,6 @@ class ModelEntity(Base):
     name = Column(String, nullable=False)
     model = Column(String, nullable=False)
     type = Column(String, nullable=False)
-    processorModel = Column(ForeignKey('processor_entity.model'))
     producentCode = Column(String)
     batterySizeWH = Column(Integer)
     batterySizeMAH = Column(Integer)
@@ -130,16 +150,23 @@ class ModelEntity(Base):
     length = Column(Integer)
     depth = Column(Integer)
     weight = Column(Integer)
-    screenScreenId = Column(ForeignKey('screen_entity.screenId'))
-    ramRamId = Column(ForeignKey('ram_entity.ramId'))
-    storageDriveId = Column(ForeignKey('storage_entity.driveId'))
-    graphicsGraphicsCardModel = Column(ForeignKey('graphics_entity.graphicsCardModel'))
+    ramAmount = Column(Integer, nullable=False)
+    frequency = Column(Integer, nullable=False)
+    numberOfSlots = Column(Integer, nullable=False)
+    numberOfFreeSlots = Column(Integer, nullable=False)
+    ramType = Column(String, nullable=False)
+    maxRamAmount = Column(Integer, nullable=False)
+    driveStorage = Column(Integer, nullable=False)
+    driveType = Column(String, nullable=False)
+    hddSpeed = Column(String)
+    processorId = Column(ForeignKey('processor_entity.id'))
+    screenId = Column(ForeignKey('screen_entity.id'))
+    graphicsId = Column(ForeignKey('graphics_entity.id'))
 
     graphics_entity = relationship('GraphicsEntity')
     processor_entity = relationship('ProcessorEntity')
-    ram_entity = relationship('RamEntity')
     screen_entity = relationship('ScreenEntity')
-    storage_entity = relationship('StorageEntity')
+    model_img_entity = relationship('ModelImgEntity', secondary='model_entity_images_model_img_entity')
     multimedia_entity = relationship('MultimediaEntity', secondary='model_entity_multimedia_multimedia_entity')
 
 
@@ -164,6 +191,20 @@ t_model_entity_controls_control_entity = Table(
 )
 
 
+t_model_entity_drives_drive_type_entity = Table(
+    'model_entity_drives_drive_type_entity', metadata,
+    Column('modelEntityId', ForeignKey('model_entity.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True, nullable=False, index=True),
+    Column('driveTypeEntityDriveType', ForeignKey('drive_type_entity.driveType', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True, nullable=False, index=True)
+)
+
+
+t_model_entity_images_model_img_entity = Table(
+    'model_entity_images_model_img_entity', metadata,
+    Column('modelEntityId', ForeignKey('model_entity.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True, nullable=False, index=True),
+    Column('modelImgEntityId', ForeignKey('model_img_entity.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True, nullable=False, index=True)
+)
+
+
 t_model_entity_multimedia_multimedia_entity = Table(
     'model_entity_multimedia_multimedia_entity', metadata,
     Column('modelEntityId', ForeignKey('model_entity.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True, nullable=False, index=True),
@@ -174,7 +215,7 @@ t_model_entity_multimedia_multimedia_entity = Table(
 class OfferEntity(Base):
     __tablename__ = 'offer_entity'
 
-    offerId = Column(Integer, primary_key=True, server_default=text("nextval('\"offer_entity_offerId_seq\"'::regclass)"))
+    id = Column(Integer, primary_key=True, server_default=text("nextval('offer_entity_id_seq'::regclass)"))
     offerName = Column(String, nullable=False)
     offerURL = Column(String, nullable=False)
     offerPrice = Column(Integer, nullable=False)
