@@ -60,14 +60,18 @@ all_tokens_gpu
 # In[5]:
 
 
-#Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
+# Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
 checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
 [x for x in checks if x is not None]
 
 
-# In[ ]:
+# In[6]:
 
+# Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
+
+checks = [x if len(x.split()) > 1 else None for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
+[x for x in checks if x is not None]
 
 
 
