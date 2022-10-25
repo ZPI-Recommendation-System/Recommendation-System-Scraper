@@ -15,9 +15,9 @@ class BenchmarkEntity(Base):
     type = Column(String, nullable=False)
     brand = Column(String, nullable=False)
     model = Column(String, nullable=False)
-    url = Column(String, nullable=False)
     benchmark = Column(Float(53), nullable=False)
     samples = Column(Integer, nullable=False)
+    url = Column(String, nullable=False)
 
 
 class CommunicationEntity(Base):
@@ -55,10 +55,10 @@ class DriveTypeEntity(Base):
 class GraphicsEntity(Base):
     __tablename__ = 'graphics_entity'
 
+    id = Column(Integer, primary_key=True, server_default=text("nextval('graphics_entity_id_seq'::regclass)"))
     graphicsCardModel = Column(String, nullable=False)
     graphicsCardType = Column(String)
     graphicsCardVRam = Column(Integer)
-    id = Column(Integer, primary_key=True, server_default=text("nextval('graphics_entity_id_seq'::regclass)"))
     benchmarkId = Column(ForeignKey('benchmark_entity.id'))
 
     benchmark_entity = relationship('BenchmarkEntity')
@@ -72,33 +72,33 @@ class ModelEntity(Base):
     model = Column(String, nullable=False)
     type = Column(String, nullable=False)
     producentCode = Column(String)
+    batterySizeWH = Column(Float(53))
+    batterySizeMAH = Column(Float(53))
+    batteryTime = Column(Float(53))
     drive = Column(String, nullable=False)
     color = Column(String)
+    width = Column(Float(53))
+    length = Column(Float(53))
+    depth = Column(Float(53))
+    weight = Column(Float(53))
+    ramAmount = Column(Float(53), nullable=False)
+    ramFrequency = Column(Integer, nullable=False)
+    ramNumberOfSlots = Column(Integer, nullable=False)
+    ramNumberOfFreeSlots = Column(Integer, nullable=False)
     ramType = Column(String, nullable=False)
+    ramMaxAmount = Column(Integer, nullable=False)
     driveStorage = Column(Integer, nullable=False)
     driveType = Column(String, nullable=False)
     hddSpeed = Column(String)
     processorId = Column(ForeignKey('processor_entity.id'))
     screenId = Column(ForeignKey('screen_entity.id'))
     graphicsId = Column(ForeignKey('graphics_entity.id'))
-    ramFrequency = Column(Integer, nullable=False)
-    ramNumberOfSlots = Column(Integer, nullable=False)
-    ramNumberOfFreeSlots = Column(Integer, nullable=False)
-    ramMaxAmount = Column(Integer, nullable=False)
-    batterySizeWH = Column(Float(53))
-    batterySizeMAH = Column(Float(53))
-    batteryTime = Column(Float(53))
-    width = Column(Float(53))
-    length = Column(Float(53))
-    depth = Column(Float(53))
-    weight = Column(Float(53))
-    ramAmount = Column(Float(53), nullable=False)
 
     graphics_entity = relationship('GraphicsEntity')
     processor_entity = relationship('ProcessorEntity')
     screen_entity = relationship('ScreenEntity')
-    model_img_entity = relationship('ModelImgEntity', secondary='model_entity_images_model_img_entity')
     multimedia_entity = relationship('MultimediaEntity', secondary='model_entity_multimedia_multimedia_entity')
+    model_img_entity = relationship('ModelImgEntity', secondary='model_entity_images_model_img_entity')
 
 
 t_model_entity_communications_communication_entity = Table(
@@ -171,25 +171,14 @@ class OfferEntity(Base):
 class ProcessorEntity(Base):
     __tablename__ = 'processor_entity'
 
+    id = Column(Integer, primary_key=True, server_default=text("nextval('processor_entity_id_seq'::regclass)"))
     model = Column(String, nullable=False)
     series = Column(String, nullable=False)
     cores = Column(Integer, nullable=False)
     frequency = Column(Float(53), nullable=False)
-    id = Column(Integer, primary_key=True, server_default=text("nextval('processor_entity_id_seq'::regclass)"))
     benchmarkId = Column(ForeignKey('benchmark_entity.id'))
 
     benchmark_entity = relationship('BenchmarkEntity')
-
-
-class RamEntity(Base):
-    __tablename__ = 'ram_entity'
-
-    ramId = Column(Integer, primary_key=True, server_default=text("nextval('"ram_entity_ramId_seq"'::regclass)"))
-    ramAmount = Column(Integer, nullable=False)
-    frequency = Column(Integer, nullable=False)
-    numberOfSlots = Column(Integer, nullable=False)
-    numberOfFreeSlots = Column(Integer, nullable=False)
-    ramType = Column(String, nullable=False)
 
 
 class ScreenEntity(Base):
