@@ -4,7 +4,7 @@ import pandas as pd
 
 import constants
 
-
+# rejected version
 def mergeAllegroUserBenchmark():
     laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
     cpu_bechmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
