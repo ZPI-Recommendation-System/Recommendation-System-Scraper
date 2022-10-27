@@ -3,7 +3,6 @@ from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String, Tabl
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-
 Base = declarative_base()
 metadata = Base.metadata
 
@@ -52,6 +51,43 @@ class DriveTypeEntity(Base):
     model_entity = relationship('ModelEntity', secondary='model_entity_drives_drive_type_entity')
 
 
+class ModelImgEntity(Base):
+    __tablename__ = 'model_img_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('model_img_entity_id_seq'::regclass)"))
+    url = Column(String, nullable=False)
+
+
+class MultimediaEntity(Base):
+    __tablename__ = 'multimedia_entity'
+
+    multimediaName = Column(String, primary_key=True)
+
+
+class ScreenEntity(Base):
+    __tablename__ = 'screen_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('screen_entity_id_seq'::regclass)"))
+    diagonalScreenInches = Column(Float(53))
+    resolution = Column(String)
+    screenFinish = Column(String)
+    screenType = Column(String)
+    refreshRate = Column(Integer)
+    touchScreen = Column(Boolean)
+
+
+class UserEntity(Base):
+    __tablename__ = 'user_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('user_entity_id_seq'::regclass)"))
+    username = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    surname = Column(String, nullable=False)
+
+
 class GraphicsEntity(Base):
     __tablename__ = 'graphics_entity'
 
@@ -59,6 +95,19 @@ class GraphicsEntity(Base):
     graphicsCardModel = Column(String, nullable=False)
     graphicsCardType = Column(String)
     graphicsCardVRam = Column(Integer)
+    benchmarkId = Column(ForeignKey('benchmark_entity.id'))
+
+    benchmark_entity = relationship('BenchmarkEntity')
+
+
+class ProcessorEntity(Base):
+    __tablename__ = 'processor_entity'
+
+    id = Column(Integer, primary_key=True, server_default=text("nextval('processor_entity_id_seq'::regclass)"))
+    model = Column(String)
+    series = Column(String)
+    cores = Column(Integer)
+    frequency = Column(Float(53))
     benchmarkId = Column(ForeignKey('benchmark_entity.id'))
 
     benchmark_entity = relationship('BenchmarkEntity')
@@ -81,14 +130,14 @@ class ModelEntity(Base):
     length = Column(Float(53))
     depth = Column(Float(53))
     weight = Column(Float(53))
-    ramAmount = Column(Float(53), nullable=False)
-    ramFrequency = Column(Integer, nullable=False)
-    ramNumberOfSlots = Column(Integer, nullable=False)
-    ramNumberOfFreeSlots = Column(Integer, nullable=False)
-    ramType = Column(String, nullable=False)
-    ramMaxAmount = Column(Integer, nullable=False)
-    driveStorage = Column(Integer, nullable=False)
-    driveType = Column(String, nullable=False)
+    ramAmount = Column(Float(53))
+    ramFrequency = Column(Integer)
+    ramNumberOfSlots = Column(Integer)
+    ramNumberOfFreeSlots = Column(Integer)
+    ramType = Column(String)
+    ramMaxAmount = Column(Integer)
+    driveStorage = Column(Integer)
+    driveType = Column(String)
     hddSpeed = Column(String)
     processorId = Column(ForeignKey('processor_entity.id'))
     screenId = Column(ForeignKey('screen_entity.id'))
@@ -143,19 +192,6 @@ t_model_entity_multimedia_multimedia_entity = Table(
 )
 
 
-class ModelImgEntity(Base):
-    __tablename__ = 'model_img_entity'
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('model_img_entity_id_seq'::regclass)"))
-    url = Column(String, nullable=False)
-
-
-class MultimediaEntity(Base):
-    __tablename__ = 'multimedia_entity'
-
-    multimediaName = Column(String, primary_key=True)
-
-
 class OfferEntity(Base):
     __tablename__ = 'offer_entity'
 
@@ -166,40 +202,3 @@ class OfferEntity(Base):
     modelId = Column(ForeignKey('model_entity.id'))
 
     model_entity = relationship('ModelEntity')
-
-
-class ProcessorEntity(Base):
-    __tablename__ = 'processor_entity'
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('processor_entity_id_seq'::regclass)"))
-    model = Column(String, nullable=False)
-    series = Column(String, nullable=False)
-    cores = Column(Integer, nullable=False)
-    frequency = Column(Float(53), nullable=False)
-    benchmarkId = Column(ForeignKey('benchmark_entity.id'))
-
-    benchmark_entity = relationship('BenchmarkEntity')
-
-
-class ScreenEntity(Base):
-    __tablename__ = 'screen_entity'
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('screen_entity_id_seq'::regclass)"))
-    diagonalScreenInches = Column(Float(53), nullable=False)
-    resolution = Column(String, nullable=False)
-    screenFinish = Column(String, nullable=False)
-    screenType = Column(String, nullable=False)
-    refreshRate = Column(Integer, nullable=False)
-    touchScreen = Column(Boolean, nullable=False)
-
-
-class UserEntity(Base):
-    __tablename__ = 'user_entity'
-
-    id = Column(Integer, primary_key=True, server_default=text("nextval('user_entity_id_seq'::regclass)"))
-    username = Column(String, nullable=False)
-    email = Column(String, nullable=False)
-    password = Column(String, nullable=False)
-    role = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    surname = Column(String, nullable=False)
