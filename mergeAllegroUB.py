@@ -7,6 +7,7 @@
 from pprint import pprint
 import regex as re
 import pandas as pd
+import numpy as np
 
 import constants
 
@@ -86,8 +87,48 @@ for i, token in enumerate(positions_list):
 
 positions_dict
 
-
 # In[8]:
 
 
 # Tworzenie wektorów z tokenów
+
+np.zeros((len(positions_list),), dtype=int)
+
+# In[9]:
+
+
+gpu_benchmark_data
+
+
+# In[10]:
+
+
+def create_vector(tokens, positions_dict):
+    arr = np.zeros((len(positions_list),), dtype=int)
+    for token in tokens:
+        if token in positions_dict:
+            arr[positions_dict[token]] = 1
+        else:
+            raise Exception(f"Token {token} was not found in positions_dict")
+    return arr
+
+
+# In[11]:
+
+
+gpu_benchmark_data['Vectors'] = [create_vector(i, positions_dict) for i in gpu_benchmark_data['Tokens']]
+gpu_benchmark_data['Vectors_Ones_Count'] = [np.count_nonzero(x == 1) for x in gpu_benchmark_data['Vectors']]
+
+# In[12]:
+
+
+arr = np.zeros((len(positions_list),), dtype=int)
+arr[0] = 1
+arr[0]
+
+# In[13]:
+
+
+gpu_benchmark_data[['Tokens', 'Vectors', 'Vectors_Ones_Count']]
+
+# In[ ]:
