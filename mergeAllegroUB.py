@@ -30,18 +30,37 @@ laptops_data['Tokens'] = laptops_data['Tokens'].str.replace(r"[-]", ' ', regex=T
 laptops_data['Tokens'] = [[item for sublist in [re.sub('TI$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in laptops_data['Tokens'].str.split()]
 [x for x in laptops_data['Tokens']]
 
-
 # In[3]:
 
 
-#Tworzenie tokenów z pliku benchmarkowego
+# Tworzenie tokenów z pliku benchmarkowego
+"""                              
+token_column = list()
+for model_token in gpu_benchmark_data['Tokens'].str.split():
+    sublist = list() # [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()]] 
+    for token in model_token:
+        if re.findall(r'[-/]', token, re.IGNORECASE):
+            sublist.append(re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split())
+        else:
+            sublist.append([token.upper()])
+    row = []
+    for item in sublist:
+        display(item)
+        row.append(item)
+    token_column.append(row)
+display(tokens_column)
+"""
 
-gpu_benchmark_data['Tokens'] = gpu_benchmark_data[['Brand','Model']].apply(lambda x: " ".join(x) if(x[0] not in x[1]) else x[1], axis=1)
+gpu_benchmark_data['Tokens'] = gpu_benchmark_data[['Brand', 'Model']].apply(
+    lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
 gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.upper()
 gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
-gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
-#gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub('-Ti$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('-TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
-#gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].apply(lambda x: [re.sub('[-/]', ' ', token.upper(), flags=re.IGNORECASE) for token in x])
+gpu_benchmark_data['Tokens'] = [[item for sublist in [
+    re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [
+        token.upper()] for token in model_token] for item in sublist] for model_token in
+                                gpu_benchmark_data['Tokens'].str.split()]
+# gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub('-Ti$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('-TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
+# gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].apply(lambda x: [re.sub('[-/]', ' ', token.upper(), flags=re.IGNORECASE) for token in x])
 
 
 [x for x in gpu_benchmark_data['Tokens']]
@@ -51,30 +70,28 @@ gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub(r'[-/]', ' ', token
 # In[4]:
 
 
-#Wypisanie tokenów
+# Wypisanie tokenów
 
 [all_tokens_gpu.add(x) for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
 [all_tokens_gpu.add(x) for sublist in laptops_data['Tokens'] for x in sublist]
 all_tokens_gpu
 
-
 # In[5]:
 
 
-#Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
+# Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
-checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
+checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in gpu_benchmark_data['Tokens'] for x in
+          sublist]
 [x for x in checks if x is not None]
-
 
 # In[6]:
 
 
-#Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
+# Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
 checks = [x if len(x.split()) > 1 else None for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
 [x for x in checks if x is not None]
-
 
 # In[7]:
 
@@ -113,22 +130,30 @@ def create_vector(tokens, positions_dict):
     return arr
 
 
+def create_vectors_df(df):
+    df['Vectors'] = [create_vector(i, positions_dict) for i in df['Tokens']]
+    df['Vectors_Ones_Count'] = [np.count_nonzero(x == 1) for x in df['Vectors']]
+
+
 # In[11]:
 
 
-gpu_benchmark_data['Vectors'] = [create_vector(i, positions_dict) for i in gpu_benchmark_data['Tokens']]
-gpu_benchmark_data['Vectors_Ones_Count'] = [np.count_nonzero(x == 1) for x in gpu_benchmark_data['Vectors']]
+create_vectors_df(gpu_benchmark_data)
+create_vectors_df(laptops_data)
 
 # In[12]:
 
 
-arr = np.zeros((len(positions_list),), dtype=int)
-arr[0] = 1
-arr[0]
+gpu_benchmark_data[['Model', 'Tokens', 'Vectors', 'Vectors_Ones_Count']]
 
 # In[13]:
 
 
-gpu_benchmark_data[['Tokens', 'Vectors', 'Vectors_Ones_Count']]
+laptops_data[['Model_karty_graficznej', 'Tokens', 'Vectors', 'Vectors_Ones_Count']]
+
+# In[14]:
+
+
+gpu_benchmark_data['Vectors'][4]
 
 # In[ ]:
