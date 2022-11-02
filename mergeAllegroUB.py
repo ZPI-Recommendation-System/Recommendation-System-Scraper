@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from pprint import pprint
+from collections import namedtuple
 import regex as re
 import pandas as pd
 import numpy as np
 from IPython.core.display_functions import display
-
 import constants
 
+CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
 laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
 cpu_bechmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
 gpu_benchmark_data = pd.read_csv(constants.GPU_BENCHMARK_FILE_PATH)
@@ -92,7 +92,6 @@ def create_benchmark_tokens(gpu_benchmark_data):
     gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.upper()
     gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
     gpu_benchmark_data['Tokens'] = create_benchmark_token_column(gpu_benchmark_data)
-
     # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
     # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub('-Ti$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('-TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
     # gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].apply(lambda x: [re.sub('[-/]', ' ', token.upper(), flags=re.IGNORECASE) for token in x])
