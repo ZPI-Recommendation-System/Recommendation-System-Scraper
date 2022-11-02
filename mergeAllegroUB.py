@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from pprint import pprint
 from collections import namedtuple
 import regex as re
 import pandas as pd
@@ -216,8 +217,8 @@ def assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data):
     positions_dict = create_positions_dict(all_tokens_gpu)
     create_vectors(laptops_data, gpu_benchmark_data, positions_dict)
     assignments_dict = create_assignment_dict(laptops_data, gpu_benchmark_data)
-    display(assignments_dict)
+    pprint(assignments_dict)
 
 
-display(assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data))
+assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data)
 
