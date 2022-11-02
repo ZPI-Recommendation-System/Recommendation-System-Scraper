@@ -13,11 +13,11 @@ CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
 laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
 cpu_bechmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
 gpu_benchmark_data = pd.read_csv(constants.GPU_BENCHMARK_FILE_PATH)
-laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_')
+laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
 key_words = ['LAPTOP', 'MOBILE']
 
 # Tworzenie tokenów z pliku z danymi laptopów
-def create_laptop_token_column(laptops_data):
+def create_laptop_gpu_tokens_column(laptops_data):
     token_column = []
     for model_token in laptops_data['Tokens'].str.split():
         sublist = list()  # [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()]]
@@ -49,17 +49,17 @@ def create_laptop_token_column(laptops_data):
     return token_column
 
 
-def create_laptop_tokens(laptops_data):
+def create_laptop_gpu_tokens(laptops_data):
     laptops_data['Tokens'] = laptops_data['Model_karty_graficznej'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
     laptops_data['Tokens'] = laptops_data['Tokens'].str.upper()
     laptops_data['Tokens'] = laptops_data['Tokens'].str.replace(r"[-]", ' ', regex=True)
-    laptops_data['Tokens'] = create_laptop_token_column(laptops_data)
+    laptops_data['Tokens'] = create_laptop_gpu_tokens_column(laptops_data)
     # laptops_data['Tokens'] = [[item for sublist in [re.sub('TI$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in laptops_data['Tokens'].str.split()]
     # [x for x in laptops_data['Tokens']]
 
 
 # Tworzenie tokenów z pliku benchmarkowego
-def create_benchmark_token_column(gpu_benchmark_data):
+def create_benchmark_gpu_tokens_column(gpu_benchmark_data):
     token_column = []
     for model_token in gpu_benchmark_data['Tokens'].str.split():
         sublist = list()  # [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()]]
@@ -87,12 +87,12 @@ def create_benchmark_token_column(gpu_benchmark_data):
     return token_column
 
 
-def create_benchmark_tokens(gpu_benchmark_data):
+def create_benchmark_gpu_tokens(gpu_benchmark_data):
     gpu_benchmark_data['Tokens'] = gpu_benchmark_data[['Brand', 'Model']].apply(
         lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
     gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.upper()
     gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
-    gpu_benchmark_data['Tokens'] = create_benchmark_token_column(gpu_benchmark_data)
+    gpu_benchmark_data['Tokens'] = create_benchmark_gpu_tokens_column(gpu_benchmark_data)
     # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
     # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub('-Ti$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('-TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
     # gpu_benchmark_data['Tokens'] = gpu_benchmark_data['Tokens'].apply(lambda x: [re.sub('[-/]', ' ', token.upper(), flags=re.IGNORECASE) for token in x])
@@ -101,7 +101,7 @@ def create_benchmark_tokens(gpu_benchmark_data):
     # gpu_benchmark_data[pd.DataFrame(gpu_benchmark_data['Tokens'].tolist()).isin(['-']).any(1).values]
 
 
-def test_tokens(laptops_data, gpu_benchmark_data):
+def test_gpu_tokens(laptops_data, gpu_benchmark_data):
     # Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
     checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in gpu_benchmark_data['Tokens'] for x in
@@ -124,7 +124,7 @@ def test_tokens(laptops_data, gpu_benchmark_data):
         print("Nie ma zadnych wielowyrazowych tokenow")
 
 
-def create_unique_tokens(laptops_data, gpu_benchmark_data):
+def create_unique_gpu_tokens(laptops_data, gpu_benchmark_data):
     # Wypisanie tokenów
     all_tokens_gpu = set()
     [all_tokens_gpu.add(x) for sublist in gpu_benchmark_data['Tokens'] for x in sublist]
@@ -132,7 +132,7 @@ def create_unique_tokens(laptops_data, gpu_benchmark_data):
     return all_tokens_gpu
 
 
-def create_positions_dict(all_tokens_gpu):
+def create_gpu_positions_dict(all_tokens_gpu):
     positions_dict = dict()
     positions_list = list(all_tokens_gpu)
 
@@ -141,7 +141,7 @@ def create_positions_dict(all_tokens_gpu):
     return positions_dict
 
 
-def create_vector(tokens, positions_dict):
+def create_gpu_vector(tokens, positions_dict):
     arr = np.zeros((len(positions_dict),), dtype=int)
     for token in tokens:
         if token in positions_dict:
@@ -151,17 +151,17 @@ def create_vector(tokens, positions_dict):
     return arr
 
 
-def create_vectors_df(df, positions_dict):
-    df['Vectors'] = [create_vector(i, positions_dict) for i in df['Tokens']]
+def create_gpu_vectors_df(df, positions_dict):
+    df['Vectors'] = [create_gpu_vector(i, positions_dict) for i in df['Tokens']]
     df['Vectors_Ones_Count'] = [np.count_nonzero(x == 1) for x in df['Vectors']]
 
 
 def create_vectors(laptops_data, gpu_benchmark_data, positions_dict):
-    create_vectors_df(gpu_benchmark_data, positions_dict)
-    create_vectors_df(laptops_data, positions_dict)
+    create_gpu_vectors_df(gpu_benchmark_data, positions_dict)
+    create_gpu_vectors_df(laptops_data, positions_dict)
 
 
-def cosine_score(laptop, benchmark):
+def cosine_gpu_score(laptop, benchmark):
     # if laptop.Model_karty_graficznej == "['NVIDIA Quadro K1000M']":
     #    print(laptop, benchmark)
     nominal = np.dot(laptop.Vectors, benchmark.Vectors)
@@ -170,7 +170,7 @@ def cosine_score(laptop, benchmark):
     return CosineScore(benchmark.Model, output, benchmark.Benchmark)
 
 
-def create_assignment_dict(laptops_data, gpu_benchmark_data):
+def create_gpu_assignment_dict(laptops_data, gpu_benchmark_data):
     assignments = dict()
 
     for laptop in laptops_data.itertuples():
@@ -183,7 +183,7 @@ def create_assignment_dict(laptops_data, gpu_benchmark_data):
         duplicates_by_score = list()
 
         for benchmark in gpu_benchmark_data.itertuples():
-            assigned_gpu_scores.append(cosine_score(laptop, benchmark))
+            assigned_gpu_scores.append(cosine_gpu_score(laptop, benchmark))
         assigned_gpu_scores.sort(key=lambda x: x.Cosine_Score, reverse=True)
 
         # display(assigned_gpu_scores)
@@ -210,13 +210,13 @@ def create_assignment_dict(laptops_data, gpu_benchmark_data):
 
 
 def assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data):
-    create_laptop_tokens(laptops_data)
-    create_benchmark_tokens(gpu_benchmark_data)
-    test_tokens(laptops_data, gpu_benchmark_data)
-    all_tokens_gpu = create_unique_tokens(laptops_data, gpu_benchmark_data)
-    positions_dict = create_positions_dict(all_tokens_gpu)
+    create_laptop_gpu_tokens(laptops_data)
+    create_benchmark_gpu_tokens(gpu_benchmark_data)
+    test_gpu_tokens(laptops_data, gpu_benchmark_data)
+    all_tokens_gpu = create_unique_gpu_tokens(laptops_data, gpu_benchmark_data)
+    positions_dict = create_gpu_positions_dict(all_tokens_gpu)
     create_vectors(laptops_data, gpu_benchmark_data, positions_dict)
-    assignments_dict = create_assignment_dict(laptops_data, gpu_benchmark_data)
+    assignments_dict = create_gpu_assignment_dict(laptops_data, gpu_benchmark_data)
     pprint(assignments_dict)
 
 
