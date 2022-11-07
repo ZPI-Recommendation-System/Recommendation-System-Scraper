@@ -10,9 +10,9 @@ from IPython.core.display_functions import display
 import constants
 
 CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
-laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
-cpu_benchmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
-laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
+# laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
+# cpu_benchmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
+# laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
 
 
 def create_laptop_token_column(laptops_data):
@@ -112,7 +112,7 @@ def cosine_cpu_score(laptop, benchmark):
     nominal = np.dot(laptop.VectorsCPU, benchmark.VectorsCPU)
     denominal = np.sqrt(laptop.VectorsCPU_Ones_Count) * np.sqrt(benchmark.VectorsCPU_Ones_Count)
     output = (nominal / denominal).item()
-    return CosineScore(benchmark.Model, output, benchmark.Benchmark)
+    return CosineScore(benchmark.Model, output, benchmark)
 
 
 def create_cpu_assignment_dict(laptops_data, gpu_benchmark_data):
@@ -134,7 +134,7 @@ def create_cpu_assignment_dict(laptops_data, gpu_benchmark_data):
                 break
             duplicates_by_score.append(score)
 
-        min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark)
+        min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark.Benchmark)
 
         # print(laptop.Model_procesora)
         # print('assignments ******************************************************************')
@@ -150,6 +150,8 @@ def create_cpu_assignment_dict(laptops_data, gpu_benchmark_data):
 
 
 def assign_cpus_from_benchmarks(laptops_data, cpu_benchmark_data):
+    laptops_data = laptops_data.copy(deep=False)
+    laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
     create_laptop_cpu_tokens(laptops_data)
     create_benchmark_cpu_tokens(cpu_benchmark_data)
     test_cpu_tokens(laptops_data, cpu_benchmark_data)
@@ -157,7 +159,8 @@ def assign_cpus_from_benchmarks(laptops_data, cpu_benchmark_data):
     positions_dict = create_cpu_positions_dict(all_tokens_cpu)
     create_vectors(laptops_data, cpu_benchmark_data, positions_dict)
     assignments_dict = create_cpu_assignment_dict(laptops_data, cpu_benchmark_data)
-    pprint(assignments_dict)
+    # pprint(assignments_dict)
+    return assignments_dict
 
 
-assign_cpus_from_benchmarks(laptops_data, cpu_benchmark_data)
+# assign_cpus_from_benchmarks(laptops_data, cpu_benchmark_data)

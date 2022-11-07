@@ -10,10 +10,10 @@ from IPython.core.display_functions import display
 import constants
 
 CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
-laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
-cpu_bechmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
-gpu_benchmark_data = pd.read_csv(constants.GPU_BENCHMARK_FILE_PATH)
-laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
+# laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
+# cpu_bechmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
+# gpu_benchmark_data = pd.read_csv(constants.GPU_BENCHMARK_FILE_PATH)
+# laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
 key_words = ['LAPTOP', 'MOBILE']
 
 # Tworzenie tokenów z pliku z danymi laptopów
@@ -167,7 +167,7 @@ def cosine_gpu_score(laptop, benchmark):
     nominal = np.dot(laptop.Vectors, benchmark.Vectors)
     denominal = np.sqrt(laptop.Vectors_Ones_Count) * np.sqrt(benchmark.Vectors_Ones_Count)
     output = (nominal / denominal).item()
-    return CosineScore(benchmark.Model, output, benchmark.Benchmark)
+    return CosineScore(benchmark.Model, output, benchmark)
 
 
 def create_gpu_assignment_dict(laptops_data, gpu_benchmark_data):
@@ -194,7 +194,7 @@ def create_gpu_assignment_dict(laptops_data, gpu_benchmark_data):
                 break
             duplicates_by_score.append(score)
 
-        min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark)
+        min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark.Benchmark)
 
         # print(laptop.Model_karty_graficznej)
         # print('assignments ******************************************************************')
@@ -210,6 +210,8 @@ def create_gpu_assignment_dict(laptops_data, gpu_benchmark_data):
 
 
 def assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data):
+    laptops_data = laptops_data.copy(deep=False)
+    laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
     create_laptop_gpu_tokens(laptops_data)
     create_benchmark_gpu_tokens(gpu_benchmark_data)
     test_gpu_tokens(laptops_data, gpu_benchmark_data)
@@ -217,8 +219,9 @@ def assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data):
     positions_dict = create_gpu_positions_dict(all_tokens_gpu)
     create_vectors(laptops_data, gpu_benchmark_data, positions_dict)
     assignments_dict = create_gpu_assignment_dict(laptops_data, gpu_benchmark_data)
-    pprint(assignments_dict)
+    # pprint(assignments_dict)
+    return assignments_dict
 
 
-assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data)
+# assign_gpus_from_benchmarks(laptops_data, gpu_benchmark_data)
 
