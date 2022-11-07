@@ -303,7 +303,7 @@ def post_filter():
         .apply(str) \
         .apply(lambda x: x.replace(',', '.')) \
         .apply(lambda x: x.split(' ')) \
-        .apply(lambda x: sqlalchemy.sql.null() if eval(x[0]) < 11.6 else eval(x[0]))
+        .apply(lambda x: sqlalchemy.sql.null() if eval(x[0]) <= 7 else eval(x[0]))
 
     rows_to_drop = clear_laptops[clear_laptops['Przekątna ekranu'] == sqlalchemy.sql.null()]
     clear_laptops = clear_laptops.drop(rows_to_drop.index)
