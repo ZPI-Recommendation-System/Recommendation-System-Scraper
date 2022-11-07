@@ -17,6 +17,7 @@ PRODUCTS_URL = "https://api.allegro.pl/sale/products"
 CATEGORIES_URL = "https://api.allegro.pl/sale/categories/{categoryId}/product-parameters"
 PARTICULAR_PRODUCT_URL = "https://api.allegro.pl/sale/products/{productId}"
 LAPTOP_CATEGORY = '491'
+OUTPUT_CSV = 'laptops.csv'
 
 def generate_code_verifier():
     code_verifier = ''.join((secrets.choice(string.ascii_letters) for i in range(40)))
@@ -170,28 +171,28 @@ def get_next_page(products):
 
 
 def dump_to_csv(data):
-    pd.DataFrame(data).to_csv("laptops.csv", header=True, index=False)
+    pd.DataFrame(data).to_csv(OUTPUT_CSV, header=True, index=False)
 
 
-def test(access_token, category_id=LAPTOP_CATEGORY):
-    parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
-    products_response = get_products(access_token, category_id)
-    writer = pd.ExcelWriter('laptops.xlsx')
-    if products_response['products'] is not None:
-        products = products_response['products']
-        data = normalise_products(access_token, [products], parameters)
-        # print_product_console(laptops)
-        pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False)
-    page_id = get_next_page(products_response)
-    while page_id is not None:
-        products_response = get_products(access_token, category_id, page_id)
-        if products_response['products'] is not None:
-            products = products_response['products']
-            data = normalise_products(access_token, [products], parameters)
-            # print_product_console(laptops)
-            pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False, header=False, startrow=writer.sheets['Sheet1'].max_row)
-        page_id = get_next_page(products_response)
-    writer.close()
+# def test(access_token, category_id=LAPTOP_CATEGORY):
+#     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
+#     products_response = get_products(access_token, category_id)
+#     writer = pd.ExcelWriter('laptops.xlsx')
+#     if products_response['products'] is not None:
+#         products = products_response['products']
+#         data = normalise_products(access_token, [products], parameters)
+#         # print_product_console(laptops)
+#         pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False)
+#     page_id = get_next_page(products_response)
+#     while page_id is not None:
+#         products_response = get_products(access_token, category_id, page_id)
+#         if products_response['products'] is not None:
+#             products = products_response['products']
+#             data = normalise_products(access_token, [products], parameters)
+#             # print_product_console(laptops)
+#             pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False, header=False, startrow=writer.sheets['Sheet1'].max_row)
+#         page_id = get_next_page(products_response)
+#     writer.close()
 
 
 def main():
@@ -204,7 +205,6 @@ def main():
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
     data = normalise_products(access_token, products, parameters)
-    # print_product_console(laptops)
     dump_to_csv(data)
 
 
@@ -212,4 +212,4 @@ if __name__ == "__main__":
     start = time.time()
     main()
     end = time.time()
-    print(end - start)
+    print("Run time: " + str(int((int(end - start) / 60))) + " minutes")
