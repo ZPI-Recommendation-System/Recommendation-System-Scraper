@@ -3,12 +3,13 @@ import hashlib
 import json
 import secrets
 import string
+import time
 
 import pandas as pd
 import requests
 
-CLIENT_ID = "0bff5f618e614498b1d5aad2d28fc3e6"  # wprowadź Client_ID aplikacji
-CLIENT_SECRET = "VUK2VH8MHglKach2aNaAzJyNIyP0EFXaMTAv3UCtc3I4a2yk9Ziq5n3sXSQvPvVm"  # wprowadź Client_Secret aplikacji
+CLIENT_ID = ""  # wprowadź Client_ID aplikacji
+CLIENT_SECRET = ""  # wprowadź Client_Secret aplikacji
 REDIRECT_URI = "http://localhost:8000"  # wprowadź redirect_uri
 AUTH_URL = "https://allegro.pl/auth/oauth/authorize"
 TOKEN_URL = "https://allegro.pl/auth/oauth/token"
@@ -16,7 +17,6 @@ PRODUCTS_URL = "https://api.allegro.pl/sale/products"
 CATEGORIES_URL = "https://api.allegro.pl/sale/categories/{categoryId}/product-parameters"
 PARTICULAR_PRODUCT_URL = "https://api.allegro.pl/sale/products/{productId}"
 LAPTOP_CATEGORY = '491'
-
 
 def generate_code_verifier():
     code_verifier = ''.join((secrets.choice(string.ascii_letters) for i in range(40)))
@@ -89,7 +89,7 @@ def normalise_parameters(api_response):
     return parameters_dict
 
 
-def get_products_page(token, category_id=LAPTOP_CATEGORY, page_id=''):
+def get_products(token, category_id=LAPTOP_CATEGORY, page_id=''):
     try:
         headers = {'Authorization': 'Bearer ' + token, 'Accept': "application/vnd.allegro.public.v1+json"}
         params = {
@@ -104,45 +104,46 @@ def get_products_page(token, category_id=LAPTOP_CATEGORY, page_id=''):
 
 
 def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
-    products_pages = []
-    products_response = get_products_page(access_token, category_id)
+    all_products = []
+    products_response = get_products(access_token, category_id)
     if products_response['products'] is not None:
         products = products_response['products']
-        products_pages.append(products)
+        all_products.append(products)
     page_id = get_next_page(products_response)
     while page_id is not None:
-        products_response = get_products_page(access_token, category_id, page_id)
-        if products_response['products'] is not None:
+        products_response = get_products(access_token, category_id, page_id)
+        if 'products' in products_response and products_response['products'] is not None:
             products = products_response['products']
-            products_pages.append(products)
+            all_products.append(products)
         page_id = get_next_page(products_response)
-    return products_pages
+    return all_products
 
 
 def normalise_products(access_token, products_pages, parameters):
     data = dict()
-
     data['ID'] = []
     data['Name'] = []
+    data['Zdjęcia'] = []
+
     for parameter in parameters:
         data[parameter] = []
+
     for page in products_pages:
         for product in page:
             data['ID'].append(product['id'])
             data['Name'].append(product['name'])
+            data['Zdjęcia'].append(str(list(map(lambda image: image['url'], product['images']))))
 
-            # pprint(get_particular_product(access_token, LAPTOP_CATEGORY, product['id']))
-
-            null_collumns = list(parameters.keys())
+            null_columns = list(parameters.keys())
             if product['parameters'] is not None:
                 product_parameters = product['parameters']
                 for product_parameter in product_parameters:
                     param = product_parameter['name']
                     if param in data:
-                        null_collumns.remove(param)
+                        null_columns.remove(param)
                         data[param].append(str(product_parameter['valuesLabels']))
-                for collumn in null_collumns:
-                    data[collumn].append(None)
+                for column in null_columns:
+                    data[column].append(None)
     return data
 
 
@@ -168,26 +169,26 @@ def get_next_page(products):
     return None
 
 
-def dump_to_xlsx(data):
-    pd.DataFrame(data).to_excel("laptops.xlsx", encoding='utf-8', index=False)
+def dump_to_csv(data):
+    pd.DataFrame(data).to_csv("laptops.csv", header=True, index=False)
 
 
 def test(access_token, category_id=LAPTOP_CATEGORY):
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
-    products_response = get_products_page(access_token, category_id)
+    products_response = get_products(access_token, category_id)
     writer = pd.ExcelWriter('laptops.xlsx')
     if products_response['products'] is not None:
         products = products_response['products']
         data = normalise_products(access_token, [products], parameters)
-        # print_product_console(data)
+        # print_product_console(laptops)
         pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False)
     page_id = get_next_page(products_response)
     while page_id is not None:
-        products_response = get_products_page(access_token, category_id, page_id)
+        products_response = get_products(access_token, category_id, page_id)
         if products_response['products'] is not None:
             products = products_response['products']
             data = normalise_products(access_token, [products], parameters)
-            # print_product_console(data)
+            # print_product_console(laptops)
             pd.DataFrame(data).to_excel(writer, encoding='utf-8', index=False, header=False, startrow=writer.sheets['Sheet1'].max_row)
         page_id = get_next_page(products_response)
     writer.close()
@@ -199,13 +200,16 @@ def main():
     response = get_access_token(authorization_code, code_verifier)
     access_token = response['access_token']
     print(f"access token = {access_token}")
-    test(access_token, LAPTOP_CATEGORY)
+    # test(access_token, LAPTOP_CATEGORY)
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
     data = normalise_products(access_token, products, parameters)
-    # print_product_console(data)
-    dump_to_xlsx(data)
+    # print_product_console(laptops)
+    dump_to_csv(data)
 
 
 if __name__ == "__main__":
+    start = time.time()
     main()
+    end = time.time()
+    print(end - start)
