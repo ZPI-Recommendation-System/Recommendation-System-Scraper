@@ -92,9 +92,7 @@ class ModelEntity(Base):
     processorId = Column(ForeignKey('processor_entity.id'))
     screenId = Column(ForeignKey('screen_entity.id'))
     graphicsId = Column(ForeignKey('graphics_entity.id'))
-    benchmarkId = Column(ForeignKey('benchmark_entity.id'), unique=True)
 
-    benchmark_entity = relationship('BenchmarkEntity', uselist=False)
     graphics_entity = relationship('GraphicsEntity')
     processor_entity = relationship('ProcessorEntity')
     screen_entity = relationship('ScreenEntity')
