@@ -88,7 +88,7 @@ cat = ['https://allegro.pl/kategoria/laptopy-toshiba-dynabook-77924',
 # cat = ['https://allegro.pl/kategoria/laptopy-hp-compaq-77919', 'https://allegro.pl/kategoria/laptopy-huawei-257180', 'https://allegro.pl/kategoria/laptopy-hyperbook-319099', 'https://allegro.pl/kategoria/laptopy-ibm-lenovo-77920', 'https://allegro.pl/kategoria/laptopy-kiano-258398', 'https://allegro.pl/kategoria/laptopy-kruger-matz-315410', 'https://allegro.pl/kategoria/laptopy-maibenben-316010', 'https://allegro.pl/kategoria/laptopy-medion-257162', 'https://allegro.pl/kategoria/laptopy-microsoft-257723', 'https://allegro.pl/kategoria/laptopy-msi-77921', 'https://allegro.pl/kategoria/laptopy-samsung-77922', 'https://allegro.pl/kategoria/laptopy-sony-77923', 'https://allegro.pl/kategoria/laptopy-toshiba-dynabook-77924', 'https://allegro.pl/kategoria/laptopy-inne-marki-315455']
 print(cat)
 
-with open("output.csv", mode="a", encoding="utf-8") as output:
+with open("offers.csv", mode="a", encoding="utf-8") as output:
     for e in cat:
         print("Scrapping", e)
         for i in range(1, get_number_of_pages(e) + 1):
