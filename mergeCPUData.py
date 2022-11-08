@@ -2,22 +2,20 @@
 # coding: utf-8
 
 from pprint import pprint
-from collections import namedtuple
 import regex as re
 import pandas as pd
 import numpy as np
 from IPython.core.display_functions import display
-import constants
+from constants import CosineScore
 
-CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
 # laptops_data = pd.read_csv(constants.LAPTOPS_FILE_PATH)
 # cpu_benchmark_data = pd.read_csv(constants.CPU_BENCHMARK_FILE_PATH)
 # laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
-
+TOKENS_CPU_COL_NAME = 'TokensCPU'
 
 def create_laptop_token_column(laptops_data):
     token_column = []
-    for model_token in laptops_data['TokensCPU'].str.split():
+    for model_token in laptops_data[TOKENS_CPU_COL_NAME].str.split():
         row = []
         for token in model_token:
             if re.match("(?!^[0-9]*$)(?!^[a-zA-Z]*$)^([a-zA-Z0-9]{4,50})$", token):
@@ -31,26 +29,26 @@ def create_laptop_token_column(laptops_data):
 
 
 def create_laptop_cpu_tokens(laptops_data):
-    laptops_data['TokensCPU'] = laptops_data['Model_procesora'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
-    laptops_data['TokensCPU'] = laptops_data['TokensCPU'].str.upper()
-    laptops_data['TokensCPU'] = laptops_data['TokensCPU'].str.replace(r"[-]", ' ', regex=True)
-    laptops_data['TokensCPU'] = create_laptop_token_column(laptops_data)
+    laptops_data[TOKENS_CPU_COL_NAME] = laptops_data['Model_procesora'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
+    laptops_data[TOKENS_CPU_COL_NAME] = laptops_data[TOKENS_CPU_COL_NAME].str.upper()
+    laptops_data[TOKENS_CPU_COL_NAME] = laptops_data[TOKENS_CPU_COL_NAME].str.replace(r"[-]", ' ', regex=True)
+    laptops_data[TOKENS_CPU_COL_NAME] = create_laptop_token_column(laptops_data)
 
 
 def create_benchmark_cpu_tokens(cpu_benchmark_data):
     # Tworzenie tokenów z pliku benchmarkowego
-    cpu_benchmark_data['TokensCPU'] = cpu_benchmark_data[['Brand', 'Model']].apply(
+    cpu_benchmark_data[TOKENS_CPU_COL_NAME] = cpu_benchmark_data[['Brand', 'Model']].apply(
         lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
-    cpu_benchmark_data['TokensCPU'] = cpu_benchmark_data['TokensCPU'].str.upper()
-    cpu_benchmark_data['TokensCPU'] = cpu_benchmark_data['TokensCPU'].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
-    cpu_benchmark_data['TokensCPU'] = cpu_benchmark_data['TokensCPU'].str.replace(r"[-]", ' ', regex=True)
-    cpu_benchmark_data['TokensCPU'] = create_laptop_token_column(cpu_benchmark_data)
+    cpu_benchmark_data[TOKENS_CPU_COL_NAME] = cpu_benchmark_data[TOKENS_CPU_COL_NAME].str.upper()
+    cpu_benchmark_data[TOKENS_CPU_COL_NAME] = cpu_benchmark_data[TOKENS_CPU_COL_NAME].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
+    cpu_benchmark_data[TOKENS_CPU_COL_NAME] = cpu_benchmark_data[TOKENS_CPU_COL_NAME].str.replace(r"[-]", ' ', regex=True)
+    cpu_benchmark_data[TOKENS_CPU_COL_NAME] = create_laptop_token_column(cpu_benchmark_data)
 
 
 def test_cpu_tokens(laptops_data, cpu_benchmark_data):
     # Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
-    checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in cpu_benchmark_data['TokensCPU'] for x
+    checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in cpu_benchmark_data[TOKENS_CPU_COL_NAME] for x
               in
               sublist]
     checklist = [x for x in checks if x is not None]
@@ -62,7 +60,7 @@ def test_cpu_tokens(laptops_data, cpu_benchmark_data):
 
     # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
-    checks = [x if len(x.split()) > 1 else None for sublist in cpu_benchmark_data['TokensCPU'] for x in sublist]
+    checks = [x if len(x.split()) > 1 else None for sublist in cpu_benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
     checklist = [x for x in checks if x is not None]
     if len(checklist) > 0:
         print("znaleziono blad")
@@ -74,8 +72,8 @@ def test_cpu_tokens(laptops_data, cpu_benchmark_data):
 def create_unique_cpu_tokens(laptops_data, cpu_benchmark_data):
     # Wypisanie tokenów
     all_tokens_cpu = set()
-    [all_tokens_cpu.add(x) for sublist in cpu_benchmark_data['TokensCPU'] for x in sublist]
-    [all_tokens_cpu.add(x) for sublist in laptops_data['TokensCPU'] for x in sublist]
+    [all_tokens_cpu.add(x) for sublist in cpu_benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
+    [all_tokens_cpu.add(x) for sublist in laptops_data[TOKENS_CPU_COL_NAME] for x in sublist]
     return all_tokens_cpu
 
 
@@ -99,7 +97,7 @@ def create_cpu_vector(tokens, positions_dict):
 
 
 def create_cpu_vectors_df(df, positions_dict):
-    df['VectorsCPU'] = [create_cpu_vector(i, positions_dict) for i in df['TokensCPU']]
+    df['VectorsCPU'] = [create_cpu_vector(i, positions_dict) for i in df[TOKENS_CPU_COL_NAME]]
     df['VectorsCPU_Ones_Count'] = [np.count_nonzero(x == 1) for x in df['VectorsCPU']]
 
 
@@ -111,8 +109,8 @@ def create_vectors(laptops_data, cpu_benchmark_data, positions_dict):
 def cosine_cpu_score(laptop, benchmark):
     nominal = np.dot(laptop.VectorsCPU, benchmark.VectorsCPU)
     denominal = np.sqrt(laptop.VectorsCPU_Ones_Count) * np.sqrt(benchmark.VectorsCPU_Ones_Count)
-    output = (nominal / denominal).item()
-    return CosineScore(benchmark.Model, output, benchmark)
+    cos_sim = (nominal / denominal).item()
+    return CosineScore(benchmark.Model, cos_sim, benchmark)
 
 
 def create_cpu_assignment_dict(laptops_data, gpu_benchmark_data):

@@ -8,8 +8,8 @@ from pprint import pprint
 import pandas as pd
 import requests
 
-CLIENT_ID = ""  # wprowadź Client_ID aplikacji
-CLIENT_SECRET = ""  # wprowadź Client_Secret aplikacji
+CLIENT_ID = "b8a9a702550e42f0a12ad3eb524531c0"  # wprowadź Client_ID aplikacji
+CLIENT_SECRET = "uKGWlKVj5akLa0ZyVnSCcrUmLMfmhFL9BJ0Usi4KKuVUAqa6f0eo0nQ1eC5LFpDy"  # wprowadź Client_Secret aplikacji
 REDIRECT_URI = "http://localhost:8000"  # wprowadź redirect_uri
 AUTH_URL = "https://allegro.pl.allegrosandbox.pl/auth/oauth/authorize"
 TOKEN_URL = "https://allegro.pl.allegrosandbox.pl/auth/oauth/token"
@@ -156,14 +156,12 @@ def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
         products = products_response['products']
         products_pages.append(products)
     page_id = get_next_page(products_response)
-    """
     while page_id is not None:
         products_response = get_products_page(access_token, category_id, page_id)
         if products_response['products'] is not None:
             products = products_response['products']
             products_pages.append(products)
         page_id = get_next_page(products_response)
-    """
     return products_pages
 
 
@@ -179,7 +177,7 @@ def normalise_products(access_token, products_pages, parameters):
             data['ID'].append(product['id'])
             data['Name'].append(product['name'])
 
-            # pprint(get_product_by_id(access_token, LAPTOP_CATEGORY, product['id']))
+            pprint(get_product_by_id(access_token, LAPTOP_CATEGORY, product['id']))
             null_collumns = list(parameters.keys())
             if product['parameters'] is not None:
                 product_parameters = product['parameters']
@@ -226,18 +224,11 @@ def main():
     access_token = response['access_token']
     print(f"access token = {access_token}")
     # pprint(get_offers(access_token, LAPTOP_CATEGORY))
-    # pprint(get_offer(access_token, LAPTOP_CATEGORY, "7693390861"))
-    pprint(get_offers(access_token, LAPTOP_CATEGORY))
-    # 7693390861
-    # 7693614879
-    """
     parameters = create_params_dict(get_category_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
-    # pprint(products)
     data = normalise_products(access_token, products, parameters)
     print_product_console(data)
     dump_to_xlsx(data)
-    """
 
 if __name__ == "__main__":
     main()

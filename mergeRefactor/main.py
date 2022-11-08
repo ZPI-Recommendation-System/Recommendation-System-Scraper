@@ -12,5 +12,6 @@ gpu_benchmark_data = pd.read_csv(GPU_BENCHMARK_FILE_PATH)
 cpu_benchmark_data = pd.read_csv(CPU_BENCHMARK_FILE_PATH)
 laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
 
-#MergeAllegroCPU.print_assigns(laptops_data, cpu_benchmark_data)
+MergeAllegroCPU.print_assigns(laptops_data, cpu_benchmark_data)
+print("\n")
 MergeAllegroGPU.print_assigns(laptops_data, gpu_benchmark_data)

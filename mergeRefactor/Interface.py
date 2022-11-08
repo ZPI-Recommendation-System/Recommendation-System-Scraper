@@ -6,25 +6,7 @@ import numpy as np
 from constants import CosineScore
 
 
-class MergeData(ABC):
-    @abstractmethod
-    def create_laptop_token_column(self, laptops_data):
-        pass
-
-    @abstractmethod
-    def create_laptops_tokens(self, laptops_data, tokens_col, component_col):
-        pass
-
-    @abstractmethod
-    def create_benchmark_tokens(self, benchmark_data):
-        pass
-
-    @abstractmethod
-    def test_tokens(self, laptops_data, benchmark_data):
-        pass
-
-
-class MergeDataComponents(MergeData):
+class MergeDataComponents(ABC):
     @abstractmethod
     def create_set_of_tokens(self, laptops_data, benchmark_data):
         pass
@@ -54,6 +36,23 @@ class MergeDataComponents(MergeData):
         pass
 
     @abstractmethod
-    def assign_from_benchmarks(self, laptops_data, benchmark_data, tokens_col, component_col, vector_col,
-                               vector_ones_col):
+    def assign_from_benchmarks(self, laptops_data, benchmark_data, tokens_col, component_col, vector_col, vector_ones_col):
+        pass
+
+
+class MergeData(MergeDataComponents):
+    @abstractmethod
+    def create_laptop_token_column(self, laptops_data):
+        pass
+
+    @abstractmethod
+    def create_laptops_tokens(self, laptops_data, tokens_col, component_col):
+        pass
+
+    @abstractmethod
+    def create_benchmark_tokens(self, benchmark_data):
+        pass
+
+    @abstractmethod
+    def test_tokens(self, laptops_data, benchmark_data):
         pass

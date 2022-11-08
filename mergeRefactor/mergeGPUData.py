@@ -41,8 +41,7 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
         return token_column
 
     def create_laptops_tokens(self, laptops_data, tokens_col, component_col):
-        laptops_data[tokens_col] = laptops_data[component_col].str.replace(r"[\[\]'!@#$\";()]", '',
-                                                                                      regex=True)
+        laptops_data[tokens_col] = laptops_data[component_col].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
         laptops_data[tokens_col] = laptops_data[tokens_col].str.upper()
         laptops_data[tokens_col] = laptops_data[tokens_col].str.replace(r"[-]", ' ', regex=True)
         laptops_data[tokens_col] = self.create_laptop_token_column(laptops_data)
@@ -76,11 +75,9 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
         return token_column
 
     def create_benchmark_tokens(self, benchmark_data, tokens_col):
-        benchmark_data[tokens_col] = benchmark_data[['Brand', 'Model']].apply(
-            lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
+        benchmark_data[tokens_col] = benchmark_data[['Brand', 'Model']].apply(lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.upper()
-        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(
-            r"[\[\]'!@#$\";()]", '', regex=True)
+        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
         benchmark_data[tokens_col] = self.__create_benchmark_tokens(benchmark_data, tokens_col)
         # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub(r'[-/]', ' ', token.upper(), flags=re.IGNORECASE).split() if re.findall(r'[-/]', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
         # gpu_benchmark_data['Tokens'] = [[item for sublist in [re.sub('-Ti$', ' TI', token.upper(), flags=re.IGNORECASE).split() if re.findall('-TI$', token, re.IGNORECASE) else [token.upper()] for token in model_token] for item in sublist] for model_token in gpu_benchmark_data['Tokens'].str.split()]
@@ -92,9 +89,7 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
     def test_tokens(self, laptops_data, benchmark_data):
         # Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
-        checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in
-                  benchmark_data[TOKENS_GPU_COL_NAME] for x in
-                  sublist]
+        checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in benchmark_data[TOKENS_GPU_COL_NAME] for x in sublist]
         checklist = [x for x in checks if x is not None]
         if len(checklist) > 0:
             print("znaleziono blad")
@@ -104,8 +99,7 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
 
         # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
-        checks = [x if len(x.split()) > 1 else None for sublist in benchmark_data[TOKENS_GPU_COL_NAME] for x in
-                  sublist]
+        checks = [x if len(x.split()) > 1 else None for sublist in benchmark_data[TOKENS_GPU_COL_NAME] for x in sublist]
         checklist = [x for x in checks if x is not None]
         if len(checklist) > 0:
             print("znaleziono blad")

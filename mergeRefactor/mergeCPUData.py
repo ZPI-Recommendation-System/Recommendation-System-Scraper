@@ -25,32 +25,23 @@ class MergeAllegroCPU(MergeDataComponentsImpl):
         return token_column
 
     def create_laptops_tokens(self, laptops_data, tokens_col, component_col):
-        laptops_data[tokens_col] = laptops_data[component_col].str.replace(r"[\[\]'!@#$\";()]", '',
-                                                                           regex=True)
+        laptops_data[tokens_col] = laptops_data[component_col].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
         laptops_data[tokens_col] = laptops_data[tokens_col].str.upper()
         laptops_data[tokens_col] = laptops_data[tokens_col].str.replace(r"[-]", ' ', regex=True)
         laptops_data[tokens_col] = self.create_laptop_token_column(laptops_data)
 
     def create_benchmark_tokens(self, benchmark_data, tokens_col):
         # Tworzenie tokenów z pliku benchmarkowego
-        benchmark_data[tokens_col] = benchmark_data[['Brand', 'Model']].apply(
-            lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
+        benchmark_data[tokens_col] = benchmark_data[['Brand', 'Model']].apply(lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.upper()
-        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(
-            r"[\[\]'!@#$\";()]",
-            '', regex=True)
-        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[-]", ' ',
-                                                                            regex=True)
+        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
+        benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[-]", ' ', regex=True)
         benchmark_data[tokens_col] = self.create_laptop_token_column(benchmark_data)
 
     def test_tokens(self, laptops_data, benchmark_data):
         # Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
 
-        checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in
-                  benchmark_data[TOKENS_CPU_COL_NAME]
-                  for x
-                  in
-                  sublist]
+        checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
         checklist = [x for x in checks if x is not None]
         if len(checklist) > 0:
             print("znaleziono blad")
@@ -60,8 +51,7 @@ class MergeAllegroCPU(MergeDataComponentsImpl):
 
         # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
-        checks = [x if len(x.split()) > 1 else None for sublist in benchmark_data[TOKENS_CPU_COL_NAME] for x in
-                  sublist]
+        checks = [x if len(x.split()) > 1 else None for sublist in benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
         checklist = [x for x in checks if x is not None]
         if len(checklist) > 0:
             print("znaleziono blad")

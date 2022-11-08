@@ -1,2 +1,6 @@
 # IDEA FOLDER
 .idea/
+__pycache__/
+mergeRefactor/__pycache__/
+*.csv
+*.xlsx
