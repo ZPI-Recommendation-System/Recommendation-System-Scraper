@@ -1,12 +1,4 @@
-import pandas as pd
-
-INPUT_LAPTOPS_CSV = "laptops.csv"
-INPUT_OFFERS_CSV = "offers.csv"
-OUTPUT_CLEAR_LAPTOPS_CSV = "clear-laptops.csv"
-OUTPUT_CLEAR_OFFERS_CSV = "clear-laptops.csv"
-
-
-def prefilter(laptops):
+def run_for(laptops):
     unused_columns = ['EAN (GTIN)', 'Taktowanie maksymalne procesora', 'Pamięć podręczna procesora', 'Interfejs dysku', 'Technologia akumulatora', 'Liczba komór akumulatora', 'Cechy dodatkowe', 'Materiał', 'Waga produktu z opakowaniem jednostkowym']
     laptops = laptops.drop(columns=unused_columns)
 
@@ -25,19 +17,3 @@ def prefilter(laptops):
     rows_to_drop = laptops[condition]
     filtered_data = laptops.drop(rows_to_drop.index)
     return filtered_data
-
-
-def merge():
-    laptops = pd.read_csv(INPUT_LAPTOPS_CSV)
-    laptops = prefilter(laptops)
-    offers = pd.read_csv(INPUT_OFFERS_CSV, quotechar='\'', on_bad_lines='skip', sep='\t', names=['Name', 'Price', 'URL', 'Category'], header=None)
-    merged_data = pd.merge(laptops, offers, on='Name', how='inner')
-    offers = merged_data[['Name', 'Price', 'URL', 'Category']]
-    offers.to_csv(OUTPUT_CLEAR_OFFERS_CSV, index=False, header=True)
-    merged_data = merged_data.drop_duplicates(subset=['Name'])
-    laptops = merged_data.drop(columns=['Price', 'URL', 'Category'])
-    laptops.to_csv(OUTPUT_CLEAR_LAPTOPS_CSV, index=False, header=True)
-
-
-if __name__ == "__main__":
-    merge()

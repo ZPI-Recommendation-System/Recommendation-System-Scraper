@@ -4,3 +4,4 @@ __pycache__/
 mergeRefactor/__pycache__/
 *.csv
 *.xlsx
+*.txt

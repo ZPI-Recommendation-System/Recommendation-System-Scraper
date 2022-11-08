@@ -1,9 +1,4 @@
 from abc import ABC, abstractmethod
-from pprint import pprint
-
-import numpy as np
-
-from constants import CosineScore
 
 
 class MergeDataComponents(ABC):
