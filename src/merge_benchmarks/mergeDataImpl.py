@@ -76,7 +76,7 @@ class MergeDataComponentsImpl(MergeDataComponents):
                 assignments[getattr(laptop, component_col)] = None
         return assignments
 
-
+"""
     def assign_from_benchmarks(self, laptops_data, benchmark_data, tokens_col, component_col, vector_col, vector_ones_col):
         self.create_laptops_tokens(laptops_data, tokens_col, component_col)
         self.create_benchmark_tokens(benchmark_data, tokens_col)
@@ -87,3 +87,4 @@ class MergeDataComponentsImpl(MergeDataComponents):
         assignments_dict = self.create_assignment_dict(laptops_data, benchmark_data, component_col, tokens_col, vector_col, vector_ones_col)
         # pprint(assignments_dict)
         return assignments_dict
+"""

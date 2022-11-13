@@ -107,7 +107,7 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
 
     @staticmethod
     def print_assigns(laptops_data, gpu_benchmark_data):
-        obj = MergeAllegroGPU()
+        obj = MergeAllegroGPU(MergeDataComponentsImpl())
         obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=gpu_benchmark_data,
                                    tokens_col=TOKENS_GPU_COL_NAME,

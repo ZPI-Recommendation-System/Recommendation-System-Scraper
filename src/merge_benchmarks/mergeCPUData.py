@@ -57,7 +57,7 @@ class MergeAllegroCPU(MergeDataComponentsImpl):
 
     @staticmethod
     def print_assigns(laptops_data, cpu_benchmark_data):
-        obj = MergeAllegroCPU()
+        obj = MergeAllegroCPU(MergeDataComponentsImpl())
         return obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=cpu_benchmark_data,
                                    tokens_col=TOKENS_CPU_COL_NAME,
