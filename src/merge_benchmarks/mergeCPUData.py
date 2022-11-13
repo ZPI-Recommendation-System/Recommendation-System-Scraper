@@ -1,10 +1,11 @@
 import regex as re
 
 from mergeDataImpl import MergeDataComponentsImpl
+from mergeRefactor.Interface import MergeData
 from src.constants import TOKENS_CPU_COL_NAME, LAPTOP_CPU_NAME_COLUMN, VECTORS_CPU_COLUMN, VECTORS_CPU_ONES_COLUMN
 
 
-class MergeAllegroCPU(MergeDataComponentsImpl):
+class MergeAllegroCPU(MergeData):
     def create_laptop_token_column(self, laptops_data):
         token_column = []
         for model_token in laptops_data[TOKENS_CPU_COL_NAME].str.split():

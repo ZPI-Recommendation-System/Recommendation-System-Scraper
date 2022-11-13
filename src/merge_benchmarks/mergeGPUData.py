@@ -1,12 +1,13 @@
 import regex as re
 
 from mergeDataImpl import MergeDataComponentsImpl
+from mergeRefactor.Interface import MergeData
 from src.constants import TOKENS_GPU_COL_NAME, key_words, LAPTOP_GPU_NAME_COLUMN, VECTORS_GPU_COLUMN, \
     VECTORS_GPU_ONES_COLUMN
 
 
 # Tworzenie tokenów z pliku z danymi laptopów
-class MergeAllegroGPU(MergeDataComponentsImpl):
+class MergeAllegroGPU(MergeData):
     def create_laptop_token_column(self, laptops_data):
         token_column = []
         for model_token in laptops_data[TOKENS_GPU_COL_NAME].str.split():
