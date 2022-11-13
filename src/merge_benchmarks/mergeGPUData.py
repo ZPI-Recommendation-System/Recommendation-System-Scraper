@@ -1,9 +1,9 @@
 import regex as re
 
 from mergeDataImpl import MergeDataComponentsImpl
-from mergeRefactor.Interface import MergeData
 from src.constants import TOKENS_GPU_COL_NAME, key_words, LAPTOP_GPU_NAME_COLUMN, VECTORS_GPU_COLUMN, \
     VECTORS_GPU_ONES_COLUMN
+from src.merge_benchmarks.Interface import MergeData
 
 
 # Tworzenie tokenów z pliku z danymi laptopów

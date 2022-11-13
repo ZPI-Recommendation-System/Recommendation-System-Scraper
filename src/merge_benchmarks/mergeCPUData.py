@@ -1,8 +1,8 @@
 import regex as re
 
 from mergeDataImpl import MergeDataComponentsImpl
-from mergeRefactor.Interface import MergeData
 from src.constants import TOKENS_CPU_COL_NAME, LAPTOP_CPU_NAME_COLUMN, VECTORS_CPU_COLUMN, VECTORS_CPU_ONES_COLUMN
+from src.merge_benchmarks.Interface import MergeData
 
 
 class MergeAllegroCPU(MergeData):
