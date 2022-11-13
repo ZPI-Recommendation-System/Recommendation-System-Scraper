@@ -1,7 +1,6 @@
 import pandas as pd
 
-OUTPUT_CLEAR_LAPTOPS_CSV = "clear-laptops.csv"
-OUTPUT_CLEAR_OFFERS_CSV = "clear-laptops.csv"
+from src.constants import OUTPUT_CLEAR_OFFERS_CSV, OUTPUT_CLEAR_LAPTOPS_CSV
 
 
 def run_for(laptops, offers_file):

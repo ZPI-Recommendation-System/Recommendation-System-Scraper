@@ -1,19 +1,18 @@
-import sqlalchemy
+import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import mergeCPUData
-import mergeGPUData
 from db.entities import *
-import pandas as pd
-
-CPU_BENCHMARKS_CSV = "CPU_UserBenchmarks.csv"
-GPU_BENCHMARKS_CSV = "GPU_UserBenchmarks.csv"
-DATABASE_URL = 'postgresql://backend:backend123@zpi.zgrate.ovh:5035/recommendation-system'
+from src.constants import CPU_BENCHMARKS_CSV, GPU_BENCHMARKS_CSV, DATABASE_URL
+from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
 
 
 def insert_all(session, laptops, offers):
     cpu_benchmarks = pd.read_csv(CPU_BENCHMARKS_CSV)
+    # TODO merge
+    MergeAllegroCPU.print_assigns(laptops, cpu_benchmarks)
+
+
     cpu_benchmarks = mergeCPUData.assign_cpus_from_benchmarks(laptops, cpu_benchmarks)
     added_cpu_benchmarks = dict()
 

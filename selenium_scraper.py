@@ -15,7 +15,7 @@ cookies = [
     }
 ]
 options = webdriver.ChromeOptions()
-options.add_argument(r"--user-data-dir=C:\Users\dzing\AppData\Local\Google\Chrome\User Data")
+options.add_argument(r"--user-laptops-dir=C:\Users\dzing\AppData\Local\Google\Chrome\User Data")
 options.add_argument(r'--profile-directory=Profile 17')
 driver = webdriver.Chrome(options=options)
 
@@ -65,7 +65,7 @@ def get_number_of_pages(page):
 def get_categories():
     list_cat = []
     driver.get(f"https://allegro.pl/kategoria/laptopy-491?{filter_string}")
-    categories = driver.find_element(By.XPATH, "//div[@data-role='Categories']")
+    categories = driver.find_element(By.XPATH, "//div[@laptops-role='Categories']")
     for e in categories.find_elements(By.XPATH, ".//a[@href]"):
         list_cat.append(e.get_attribute("href"))
     return list_cat

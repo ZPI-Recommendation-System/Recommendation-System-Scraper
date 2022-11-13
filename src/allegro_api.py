@@ -8,16 +8,8 @@ import time
 import pandas as pd
 import requests
 
-CLIENT_ID = ""  # wprowadź Client_ID aplikacji
-CLIENT_SECRET = ""  # wprowadź Client_Secret aplikacji
-REDIRECT_URI = "http://localhost:8000"  # wprowadź redirect_uri
-AUTH_URL = "https://allegro.pl/auth/oauth/authorize"
-TOKEN_URL = "https://allegro.pl/auth/oauth/token"
-PRODUCTS_URL = "https://api.allegro.pl/sale/products"
-CATEGORIES_URL = "https://api.allegro.pl/sale/categories/{categoryId}/product-parameters"
-PARTICULAR_PRODUCT_URL = "https://api.allegro.pl/sale/products/{productId}"
-LAPTOP_CATEGORY = "491"
-OUTPUT_CSV = "laptops.csv"
+from src.constants import AUTH_URL, CLIENT_ID, REDIRECT_URI, TOKEN_URL, LAPTOP_CATEGORY, CATEGORIES_URL, \
+    PARTICULAR_PRODUCT_URL, PRODUCTS_URL, OUTPUT_CSV
 
 
 def generate_code_verifier():
