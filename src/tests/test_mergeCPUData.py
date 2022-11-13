@@ -1,4 +1,13 @@
+import pytest
+
+from src.constants import TOKENS_CPU_COL_NAME
+
+
 class MergeAllegroCPUTests:
+
+    @pytest.fixture(scope='function')
+    def laptops_data(self):
+        data = {TOKENS_CPU_COL_NAME: ["['AMD 3020e']", "['AMD A4-9125']"]}
     def test_create_laptop_token_column(self):
         assert False
 
