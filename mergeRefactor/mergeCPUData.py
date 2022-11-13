@@ -2,9 +2,10 @@ import regex as re
 
 from constants import *
 from mergeDataImpl import MergeDataComponentsImpl
+from mergeRefactor.Interface import MergeData
 
 
-class MergeAllegroCPU(MergeDataComponentsImpl):
+class MergeAllegroCPU(MergeData):
     def create_laptop_token_column(self, laptops_data):
         token_column = []
         for model_token in laptops_data[TOKENS_CPU_COL_NAME].str.split():
@@ -57,7 +58,7 @@ class MergeAllegroCPU(MergeDataComponentsImpl):
 
     @staticmethod
     def print_assigns(laptops_data, cpu_benchmark_data):
-        obj = MergeAllegroCPU()
+        obj = MergeAllegroCPU(MergeDataComponentsImpl())
         obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=cpu_benchmark_data,
                                    tokens_col=TOKENS_CPU_COL_NAME,

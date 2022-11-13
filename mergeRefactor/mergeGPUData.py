@@ -2,10 +2,11 @@ import regex as re
 
 from constants import *
 from mergeDataImpl import MergeDataComponentsImpl
+from mergeRefactor.Interface import MergeData
 
 
 # Tworzenie tokenów z pliku z danymi laptopów
-class MergeAllegroGPU(MergeDataComponentsImpl):
+class MergeAllegroGPU(MergeData):
     def create_laptop_token_column(self, laptops_data):
         token_column = []
         for model_token in laptops_data[TOKENS_GPU_COL_NAME].str.split():
@@ -107,7 +108,7 @@ class MergeAllegroGPU(MergeDataComponentsImpl):
 
     @staticmethod
     def print_assigns(laptops_data, gpu_benchmark_data):
-        obj = MergeAllegroGPU()
+        obj = MergeAllegroGPU(MergeDataComponentsImpl())
         obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=gpu_benchmark_data,
                                    tokens_col=TOKENS_GPU_COL_NAME,
