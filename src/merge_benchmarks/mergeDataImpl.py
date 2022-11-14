@@ -1,6 +1,6 @@
 from pprint import pprint
 import numpy as np
-from Interface import MergeDataComponents
+from src.merge_benchmarks.Interface import MergeDataComponents
 from constants import CosineScore
 
 
@@ -28,7 +28,8 @@ class MergeDataComponentsImpl(MergeDataComponents):
             else:
                 raise Exception(f"Token {token} was not found in positions_dict")
         return arr
-    #(self, laptops_data, cpu_benchmark_data, tokens_col, component_col, vector_col, vector_ones_col)
+
+    # (self, laptops_data, cpu_benchmark_data, tokens_col, component_col, vector_col, vector_ones_col)
     def create_vectors_df(self, df, positions_dict, vector_col, vector_ones_col, tokens_col):
         df[vector_col] = [self.create_vector(i, positions_dict) for i in df[tokens_col]]
         df[vector_ones_col] = [np.count_nonzero(x == 1) for x in df[vector_col]]
@@ -43,7 +44,8 @@ class MergeDataComponentsImpl(MergeDataComponents):
         cos_sim = (nominal / denominal).item()
         return CosineScore(benchmark.Model, cos_sim, benchmark.Benchmark)
 
-    def create_assignment_dict(self, laptops_data, benchmark_data, component_col, token_col, vector_col, vector_ones_col):
+    def create_assignment_dict(self, laptops_data, benchmark_data, component_col, token_col, vector_col,
+                               vector_ones_col):
         assignments = dict()
         for laptop in laptops_data.itertuples():
             if getattr(laptop, component_col) in assignments:
@@ -75,6 +77,7 @@ class MergeDataComponentsImpl(MergeDataComponents):
             else:
                 assignments[getattr(laptop, component_col)] = None
         return assignments
+
 
 """
     def assign_from_benchmarks(self, laptops_data, benchmark_data, tokens_col, component_col, vector_col, vector_ones_col):

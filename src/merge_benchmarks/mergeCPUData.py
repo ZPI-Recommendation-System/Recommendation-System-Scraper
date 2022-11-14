@@ -1,7 +1,8 @@
 import regex as re
 
-from mergeDataImpl import MergeDataComponentsImpl
-from src.constants import TOKENS_CPU_COL_NAME, LAPTOP_CPU_NAME_COLUMN, VECTORS_CPU_COLUMN, VECTORS_CPU_ONES_COLUMN
+from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
+from src.constants import TOKENS_CPU_COL_NAME, LAPTOP_CPU_NAME_COLUMN, VECTORS_CPU_COLUMN, VECTORS_CPU_ONES_COLUMN, \
+    MODEL_BENCHMARK_COLUMN, BRAND_BENCHMARK_COLUMN
 from src.merge_benchmarks.Interface import MergeData
 
 
@@ -28,7 +29,7 @@ class MergeAllegroCPU(MergeData):
 
     def create_benchmark_tokens(self, benchmark_data, tokens_col):
         # Tworzenie tokenów z pliku benchmarkowego
-        benchmark_data[tokens_col] = benchmark_data[['Brand', 'Model']].apply(lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
+        benchmark_data[tokens_col] = benchmark_data[[BRAND_BENCHMARK_COLUMN, MODEL_BENCHMARK_COLUMN]].apply(lambda x: " ".join(x) if (x[0] not in x[1]) else x[1], axis=1)
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.upper()
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[\[\]'!@#$\";()]", '', regex=True)
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[-]", ' ', regex=True)

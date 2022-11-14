@@ -1,8 +1,10 @@
+from pprint import pprint
+
 import regex as re
 
 from constants import *
 from mergeDataImpl import MergeDataComponentsImpl
-from mergeRefactor.Interface import MergeData
+from merge_refactor.Interface import MergeData
 
 
 class MergeAllegroCPU(MergeData):

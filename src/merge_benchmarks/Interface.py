@@ -16,7 +16,7 @@ class MergeDataComponents(ABC):
         pass
 
     @abstractmethod
-    def create_vectors_df(self, df, positions_dict):
+    def create_vectors_df(self, df, positions_dict, vector_col, vector_ones_col, tokens_col):
         pass
 
     @abstractmethod

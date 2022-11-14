@@ -14,6 +14,8 @@ VECTORS_CPU_COLUMN = 'VectorsCPU'
 VECTORS_CPU_ONES_COLUMN = 'VectorsCPU_Ones_Count'
 LAPTOP_GPU_NAME_COLUMN = 'Model_karty_graficznej'
 LAPTOP_CPU_NAME_COLUMN = 'Model_procesora'
+BRAND_BENCHMARK_COLUMN = 'Brand'
+MODEL_BENCHMARK_COLUMN = 'Model'
 
 # allegro_api
 CLIENT_ID = "57fa927c1f0b426b9419be5de3874bfa"  # wprowadź Client_ID aplikacji

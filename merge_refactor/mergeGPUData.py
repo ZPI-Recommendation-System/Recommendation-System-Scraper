@@ -2,7 +2,7 @@ import regex as re
 
 from constants import *
 from mergeDataImpl import MergeDataComponentsImpl
-from mergeRefactor.Interface import MergeData
+from merge_refactor.Interface import MergeData
 
 
 # Tworzenie tokenów z pliku z danymi laptopów

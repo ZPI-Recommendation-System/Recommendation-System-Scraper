@@ -1,6 +1,6 @@
 import regex as re
 
-from mergeDataImpl import MergeDataComponentsImpl
+from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
 from src.constants import TOKENS_GPU_COL_NAME, key_words, LAPTOP_GPU_NAME_COLUMN, VECTORS_GPU_COLUMN, \
     VECTORS_GPU_ONES_COLUMN
 from src.merge_benchmarks.Interface import MergeData
