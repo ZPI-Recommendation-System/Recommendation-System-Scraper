@@ -39,7 +39,7 @@ OUTPUT_CLEAR_LAPTOPS_CSV = "resources/clear-laptops.csv"
 OUTPUT_CLEAR_OFFERS_CSV = "resources/clear-offers.csv"
 
 # pipeline
-INPUT_OFFERS_CSV = "offers.csv"
+INPUT_OFFERS_CSV = "resources/offers.csv"
 
 # postfilter
 
