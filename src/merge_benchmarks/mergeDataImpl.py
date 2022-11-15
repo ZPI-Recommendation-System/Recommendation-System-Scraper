@@ -1,7 +1,8 @@
 from pprint import pprint
 import numpy as np
+
+from src.constants import CosineScore
 from src.merge_benchmarks.Interface import MergeDataComponents
-from constants import CosineScore
 
 
 class MergeDataComponentsImpl(MergeDataComponents):
@@ -42,7 +43,7 @@ class MergeDataComponentsImpl(MergeDataComponents):
         nominal = np.dot(getattr(laptop, vector_col), getattr(benchmark, vector_col))
         denominal = np.sqrt(getattr(laptop, vector_ones_col)) * np.sqrt(getattr(benchmark, vector_ones_col))
         cos_sim = (nominal / denominal).item()
-        return CosineScore(benchmark.Model, cos_sim, benchmark.Benchmark)
+        return CosineScore(benchmark.Model, cos_sim, benchmark)
 
     def create_assignment_dict(self, laptops_data, benchmark_data, component_col, token_col, vector_col,
                                vector_ones_col):
@@ -64,7 +65,7 @@ class MergeDataComponentsImpl(MergeDataComponents):
                     break
                 duplicates_by_score.append(score)
 
-            min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark)
+            min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark.Benchmark)
 
             # print(laptop.Model_procesora)
             # print('assignments ******************************************************************')

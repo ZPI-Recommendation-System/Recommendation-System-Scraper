@@ -11,7 +11,7 @@ def run_for(clear_laptops, clear_offers):
     to_trim_columns = set(clear_laptops.columns.tolist()) - list_columns - {'ID', 'Name'}
 
     for col in to_trim_columns:
-        clear_laptops[col] = clear_laptops[col].str.replace("^\\['", '', regex=True).replace("'\\]$", '', regex=True)
+        clear_laptops[col] = clear_laptops[col].astype(str).str.replace("^\\['", '', regex=True).replace("'\\]$", '', regex=True)
 
     for col in list_columns:
         clear_laptops[col] = clear_laptops[col] \
@@ -19,7 +19,7 @@ def run_for(clear_laptops, clear_offers):
             .apply(lambda x: [] if x == 'nan' else eval(x)) \
             .apply(lambda x: [] if 'brak' in x and len(x) > 1 else x)
 
-    clear_laptops = clear_laptops[clear_laptops['Zdjęcia'].map(lambda x: len(x)) > 0]
+    clear_laptops.drop(clear_laptops[clear_laptops['Zdjęcia'].map(len) == 0].index, inplace=True)
 
     string_columns = {'Kod producenta', 'Rozdzielczość (px)', 'Powłoka matrycy', 'Typ matrycy',
                       'Seria procesora', 'Seria procesora', 'Typ pamięci RAM', 'Typ dysku twardego', 'Kolor',

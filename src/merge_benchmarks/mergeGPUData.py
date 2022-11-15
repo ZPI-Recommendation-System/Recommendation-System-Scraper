@@ -1,9 +1,10 @@
 import regex as re
 
-from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
+
 from src.constants import TOKENS_GPU_COL_NAME, key_words, LAPTOP_GPU_NAME_COLUMN, VECTORS_GPU_COLUMN, \
     VECTORS_GPU_ONES_COLUMN
 from src.merge_benchmarks.Interface import MergeData
+from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
 
 
 # Tworzenie tokenów z pliku z danymi laptopów
@@ -108,10 +109,13 @@ class MergeAllegroGPU(MergeData):
 
     @staticmethod
     def print_assigns(laptops_data, gpu_benchmark_data):
+        laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
         obj = MergeAllegroGPU(MergeDataComponentsImpl())
-        obj.assign_from_benchmarks(laptops_data=laptops_data,
+        result = obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=gpu_benchmark_data,
                                    tokens_col=TOKENS_GPU_COL_NAME,
                                    component_col=LAPTOP_GPU_NAME_COLUMN,
                                    vector_col=VECTORS_GPU_COLUMN,
                                    vector_ones_col=VECTORS_GPU_ONES_COLUMN)
+        laptops_data.columns = laptops_data.columns.str.replace('_', ' ')
+        return result

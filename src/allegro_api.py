@@ -1,49 +1,47 @@
-import base64
-import hashlib
 import json
-import secrets
-import string
 import time
 
 import pandas as pd
 import requests
 
-from src.constants import AUTH_URL, CLIENT_ID, REDIRECT_URI, TOKEN_URL, LAPTOP_CATEGORY, CATEGORIES_URL, \
-    PARTICULAR_PRODUCT_URL, PRODUCTS_URL, OUTPUT_CSV
+from src.constants import CLIENT_ID, TOKEN_URL, LAPTOP_CATEGORY, CATEGORIES_URL, \
+    PARTICULAR_PRODUCT_URL, PRODUCTS_URL, OUTPUT_CSV, CODE_URL, CLIENT_SECRET
 
 
-def generate_code_verifier():
-    code_verifier = ''.join((secrets.choice(string.ascii_letters) for i in range(40)))
-    return code_verifier
-
-
-def generate_code_challenge(code_verifier):
-    hashed = hashlib.sha256(code_verifier.encode('utf-8')).digest()
-    base64_encoded = base64.urlsafe_b64encode(hashed).decode('utf-8')
-    code_challenge = base64_encoded.replace('=', '')
-    return code_challenge
-
-
-def get_authorization_code(code_verifier):
-    code_challenge = generate_code_challenge(code_verifier)
-    authorization_redirect_url = f"{AUTH_URL}?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}" \
-                                 f"&code_challenge_method=S256&code_challenge={code_challenge}"
-    print("Zaloguj do Allegro - skorzystaj z url w swojej przeglądarce oraz wprowadź authorization code ze zwróconego "
-          "url: ")
-    print(f"--- {authorization_redirect_url} ---")
-    authorization_code = input('code: ')
-    return authorization_code
-
-
-def get_access_token(authorization_code, code_verifier):
+def get_code():
     try:
-        data = {'grant_type': 'authorization_code', 'code': authorization_code,
-                'redirect_uri': REDIRECT_URI, 'code_verifier': code_verifier}
-        access_token_response = requests.post(TOKEN_URL, data=data, verify=False, allow_redirects=False)
-        response_body = json.loads(access_token_response.text)
-        return response_body
+        payload = {'client_id': CLIENT_ID}
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        api_call_response = requests.post(CODE_URL, auth=(CLIENT_ID, CLIENT_SECRET),
+                                          headers=headers, data=payload)
+        return api_call_response
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
+
+
+def get_access_token(device_code):
+    try:
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        data = {'grant_type': 'urn:ietf:params:oauth:grant-type:device_code', 'device_code': device_code}
+        api_call_response = requests.post(TOKEN_URL, auth=(CLIENT_ID, CLIENT_SECRET),
+                                          headers=headers, data=data)
+        return api_call_response
+    except requests.exceptions.HTTPError as err:
+        raise SystemExit(err)
+
+
+def await_for_access_token(interval, device_code):
+    while True:
+        time.sleep(interval)
+        result_access_token = get_access_token(device_code)
+        token = json.loads(result_access_token.text)
+        if result_access_token.status_code == 400:
+            if token['error'] == 'slow_down':
+                interval += interval
+            if token['error'] == 'access_denied':
+                break
+        else:
+            return token['access_token']
 
 
 def get_parameters(token, category_id=LAPTOP_CATEGORY):
@@ -54,7 +52,7 @@ def get_parameters(token, category_id=LAPTOP_CATEGORY):
             "phrase": "laptop",
         }
         products_result = requests.get(CATEGORIES_URL.replace("{categoryId}", category_id), headers=headers,
-                                       params=params, verify=False)
+                                       params=params)
         return json.loads(products_result.text)
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
@@ -68,7 +66,7 @@ def get_particular_product(token, category_id=LAPTOP_CATEGORY, productId=''):
             "phrase": "laptop",
         }
         products_result = requests.get(PARTICULAR_PRODUCT_URL.replace("{productId}", productId), headers=headers,
-                                       params=params, verify=False)
+                                       params=params)
         return json.loads(products_result.text)
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
@@ -91,7 +89,7 @@ def get_products(token, category_id=LAPTOP_CATEGORY, page_id=''):
             "phrase": "laptop",
             "page.id": page_id
         }
-        products_result = requests.get(PRODUCTS_URL, headers=headers, params=params, verify=False)
+        products_result = requests.get(PRODUCTS_URL, headers=headers, params=params)
         return json.loads(products_result.text)
     except requests.exceptions.HTTPError as err:
         raise SystemExit(err)
@@ -164,18 +162,19 @@ def get_next_page(products):
 
 
 def dump_to_csv(data):
-    pd.DataFrame(data).to_csv(OUTPUT_CSV, header=True, index=False)
+    data.to_csv(OUTPUT_CSV, header=True, index=False)
 
 
 def scrape():
-    code_verifier = generate_code_verifier()
-    authorization_code = get_authorization_code(code_verifier)
-    response = get_access_token(authorization_code, code_verifier)
-    access_token = response['access_token']
+    code = get_code()
+    result = json.loads(code.text)
+    print("User, open this address in the browser:" + result['verification_uri_complete'])
+    access_token = await_for_access_token(int(result['interval']), result['device_code'])
     print(f"access token = {access_token}")
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
     data = normalise_products(access_token, products, parameters)
+    data = pd.DataFrame(data)
     dump_to_csv(data)
     return data
 

@@ -5,15 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from db.entities import *
 from src.constants import CPU_BENCHMARKS_CSV, GPU_BENCHMARKS_CSV, DATABASE_URL
 from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
+from src.merge_benchmarks.mergeGPUData import MergeAllegroGPU
 
 
-def insert_all(session, laptops, offers):
-    cpu_benchmarks = pd.read_csv(CPU_BENCHMARKS_CSV)
-    # TODO merge
-    MergeAllegroCPU.print_assigns(laptops, cpu_benchmarks)
-
-
-    cpu_benchmarks = mergeCPUData.assign_cpus_from_benchmarks(laptops, cpu_benchmarks)
+def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
+    cpu_benchmarks = MergeAllegroCPU.print_assigns(laptops, cpu_benchmarks)
     added_cpu_benchmarks = dict()
 
     for cpu_model, benchmark in cpu_benchmarks.items():
@@ -34,8 +30,7 @@ def insert_all(session, laptops, offers):
 
     session.add_all(list(added_cpu_benchmarks.values()))
 
-    gpu_benchmarks = pd.read_csv(GPU_BENCHMARKS_CSV)
-    gpu_benchmarks = mergeGPUData.assign_gpus_from_benchmarks(laptops, gpu_benchmarks)
+    gpu_benchmarks = MergeAllegroGPU.print_assigns(laptops, gpu_benchmarks)
     added_gpu_benchmarks = dict()
 
     for gpu_model, benchmark in gpu_benchmarks.items():
@@ -224,7 +219,7 @@ def insert_all(session, laptops, offers):
             session.add(offer_entity)
 
     print("Commit started...")
-    session.commit()
+    # session.commit()
     print("Commit finished!")
 
 
@@ -233,10 +228,10 @@ def delete_all(metadata, engine):
         engine.execute(table.delete())
 
 
-def update(laptops, offers):
+def update(laptops, offers, cpu_benchmarks, gpu_benchmarks):
     engine = create_engine(DATABASE_URL)
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    delete_all(metadata, engine)
-    insert_all(session, laptops, offers)
+    # delete_all(metadata, engine)
+    insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks)

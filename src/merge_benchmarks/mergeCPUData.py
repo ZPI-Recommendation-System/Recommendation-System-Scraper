@@ -1,9 +1,9 @@
 import regex as re
 
-from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
 from src.constants import TOKENS_CPU_COL_NAME, LAPTOP_CPU_NAME_COLUMN, VECTORS_CPU_COLUMN, VECTORS_CPU_ONES_COLUMN, \
     MODEL_BENCHMARK_COLUMN, BRAND_BENCHMARK_COLUMN
 from src.merge_benchmarks.Interface import MergeData
+from src.merge_benchmarks.mergeDataImpl import MergeDataComponentsImpl
 
 
 class MergeAllegroCPU(MergeData):
@@ -59,11 +59,14 @@ class MergeAllegroCPU(MergeData):
 
     @staticmethod
     def print_assigns(laptops_data, cpu_benchmark_data):
+        laptops_data.columns = laptops_data.columns.str.replace(r'\s+', '_', regex=True)
         obj = MergeAllegroCPU(MergeDataComponentsImpl())
-        return obj.assign_from_benchmarks(laptops_data=laptops_data,
+        result = obj.assign_from_benchmarks(laptops_data=laptops_data,
                                    benchmark_data=cpu_benchmark_data,
                                    tokens_col=TOKENS_CPU_COL_NAME,
                                    component_col=LAPTOP_CPU_NAME_COLUMN,
                                    vector_col=VECTORS_CPU_COLUMN,
                                    vector_ones_col=VECTORS_CPU_ONES_COLUMN)
+        laptops_data.columns = laptops_data.columns.str.replace('_', ' ')
+        return result
 
