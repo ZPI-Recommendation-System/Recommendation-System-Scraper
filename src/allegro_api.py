@@ -1,9 +1,11 @@
 import json
+import logging
 import time
 
 import pandas as pd
 import requests
 
+from src import websockets
 from src.constants import CLIENT_ID, TOKEN_URL, LAPTOP_CATEGORY, CATEGORIES_URL, \
     PARTICULAR_PRODUCT_URL, PRODUCTS_URL, OUTPUT_CSV, CODE_URL, CLIENT_SECRET
 
@@ -165,11 +167,15 @@ def dump_to_csv(data):
     data.to_csv(OUTPUT_CSV, header=True, index=False)
 
 
-def scrape():
+def auth():
     code = get_code()
     result = json.loads(code.text)
-    print("User, open this address in the browser:" + result['verification_uri_complete'])
-    access_token = await_for_access_token(int(result['interval']), result['device_code'])
+    # print("User, open this address in the browser:" + result['verification_uri_complete'])
+    return result
+
+
+def scrape(auth_data):
+    access_token = await_for_access_token(int(auth_data['interval']), auth_data['device_code'])
     print(f"access token = {access_token}")
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
@@ -181,6 +187,6 @@ def scrape():
 
 if __name__ == "__main__":
     start = time.time()
-    scrape()
+    scrape(auth())
     end = time.time()
     print("Run time: " + str(int((int(end - start) / 60))) + " minutes")
