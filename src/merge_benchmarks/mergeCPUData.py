@@ -44,7 +44,8 @@ class MergeAllegroCPU(MergeData):
             print("znaleziono blad")
             print(checklist)
         else:
-            print("Nie ma żadnych niepożądanych znakow w tokenach")
+            # print("Nie ma żadnych niepożądanych znakow w tokenach")
+            pass
 
         # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
@@ -54,7 +55,8 @@ class MergeAllegroCPU(MergeData):
             print("znaleziono blad")
             print(checklist)
         else:
-            print("Nie ma zadnych wielowyrazowych tokenow")
+            # print("Nie ma zadnych wielowyrazowych tokenow")
+            pass
 
 
     @staticmethod

@@ -12,54 +12,75 @@ class Pipeline:
     def __init__(self, isWebsocket):
         self.status = "ready"
         self.isWebsocket = isWebsocket
+        # logging.info("[Scraper] Scraper jest gotowy do pracy")
 
     def api_auth(self):
         self.status = "running"
+        logging.info("[Scraper] Scraper rozpoczął pracę")
         auth_data = allegro_api.auth()
-        self.log(status=self.status, message=str(auth_data['verification_uri_complete']))
+        # TODO czy przesyłać logi z linkiem
+        self.log(status="waiting_for_auth", message="Rozpoczęto operację aktualizacji bazy danych")
+        self.log(status="waiting_for_auth", message="Link do autoryzacji:")
+        self.log(status="waiting_for_auth", message=str(auth_data['verification_uri_complete']))
         return auth_data
 
     def run(self, auth_data):
         self.status = "running"
-        try:
-            start = timer()
-            self.log(self.status, "Pobieranie laptopów...")
-            laptops = allegro_api.scrape(auth_data)
-            self.log(self.status, "Gotowe!")
-            # laptops = pd.read_csv(OUTPUT_CSV)
-            # print("Done!\nPrefilter")
-            self.log(self.status, "Wstępne filtrowanie danych...")
-            prefiltered_laptops = prefilter.run_for(laptops)
-            self.log(self.status, "Gotowe!")
-            self.log(self.status, "Łączenie modeli z ofertami...")
-            # print("Done!\nMerge with offers")
-            clear_laptops, clear_offers = merge_offers.run_for(prefiltered_laptops, INPUT_OFFERS_CSV)
-            self.log(self.status, "Gotowe!")
-            self.log(self.status, "Czyszczenie danych...")
-            # print("Done!\nPosttfilter")
-            clear_laptops, clear_offers = postfilter.run_for(clear_laptops, clear_offers)
-            self.log(self.status, "Gotowe!")
-            # print("Done!\nPobieranie benchmarków")
-            self.log(self.status, "Pobieranie danych benchmarków...")
-            cpu_benchmarks, gpu_benchmarks = benchmarks.get()
-            self.log(self.status, "Gotowe!")
-            # print("Done!\nAktualizacja bazy danych")
-            self.log(self.status, "Aktualizowanie bazy danych...")
-            database.update(clear_laptops, clear_offers, cpu_benchmarks, gpu_benchmarks)
-            self.log(self.status, "Gotowe!")
-            end = timer()
-            # print("Czas wykonywania: " + str(timedelta(seconds=end - start)))
-            time = str(timedelta(seconds=end - start))
-            self.status = "ready"
-            logging.info("Operacja aktualizacji bazy danych zakończona")
-            logging.info("Czas trwania: " + time)
-            if self.isWebsocket:
-                websockets.emit_work_status("finished", ["Operacja aktualizacji bazy danych zakończona", "Czas trwania: " + time], None)
-        except Exception as err:
-            self.log("error", "Wystąpił błąd: " + str(err))
-        finally:
-            if self.isWebsocket:
-                websockets.emit_work_status("ready", [], None)
+        tries = 0
+        start = timer()
+        while True:
+            try:
+                self.log("waiting_for_auth", "Oczekiwanie na autoryzację...")
+                access_token = allegro_api.auth2(auth_data)
+                websockets.emit_work_status("authorised", [], None)
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Pobieranie laptopów...")
+                # laptops = allegro_api.scrape(access_token)
+                laptops = pd.read_csv(OUTPUT_CSV)
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Wstępne filtrowanie danych...")
+                prefiltered_laptops = prefilter.run_for(laptops)
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Łączenie modeli z ofertami...")
+                clear_laptops, clear_offers = merge_offers.run_for(prefiltered_laptops, INPUT_OFFERS_CSV)
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Czyszczenie danych...")
+                clear_laptops, clear_offers = postfilter.run_for(clear_laptops, clear_offers)
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Pobieranie danych benchmarków...")
+                cpu_benchmarks, gpu_benchmarks = benchmarks.get()
+                self.log(self.status, "Gotowe!")
+                self.log(self.status, "Aktualizowanie bazy danych...")
+                database.update(clear_laptops, clear_offers, cpu_benchmarks, gpu_benchmarks)
+                self.log(self.status, "Gotowe!")
+                end = timer()
+                time = str(timedelta(seconds=end - start))
+                logging.info("Operacja zakończona pomyślnie")
+                logging.info("Czas trwania: " + time)
+                if self.isWebsocket:
+                    websockets.emit_work_status("finished", ["Operacja zakończona pomyślnie", "Czas trwania: " + time], None)
+                break
+            except Exception as err:
+                self.log("error", "Wystąpił błąd: " + str(err))
+                if tries < 3:
+                    tries += 1
+                    self.log("running", "Ponawianie (próba nr " + str(tries) + ")...")
+                    continue
+                else:
+                    end = timer()
+                    time = str(timedelta(seconds=end - start))
+                    logging.error("Operacja zakończona błędem")
+                    logging.info("Czas trwania: " + time)
+                    if self.isWebsocket:
+                        websockets.emit_work_status("error", ["Operacja zakończona błędem"], None)
+                        websockets.emit_work_status("info", ["Czas trwania: " + time], None)
+                        websockets.emit_work_status("finished", [], None)
+                    break
+
+        self.status = "ready"
+        logging.info("[Scraper] Scraper jest gotowy do pracy")
+        if self.isWebsocket:
+            websockets.emit_work_status("ready", [], None)
 
     def log(self, status, message):
         if status == "error":
@@ -71,16 +92,8 @@ class Pipeline:
             websockets.emit_work_status(status, [message], None)
 
 
-
-
-
-
 if __name__ == "__main__":
     import logging.config
-
-    # stream_handler = logging.StreamHandler()
-    # stream_handler.setLevel(logging.INFO)
-    # logging.basicConfig(handlers=[stream_handler, logging.FileHandler(filename="logs/" + str(datetime.now()).replace(":", "-") + ".log", mode="w")], format="[%(levelname)s][%(asctime)s] %(message)s"),
     logging.basicConfig(level=logging.INFO, filename="logs/" + str(datetime.now()).replace(":", "-") + ".log", filemode="w", format="[%(levelname)s][%(asctime)s] %(message)s")
     logging.getLogger().addHandler(logging.StreamHandler())
     pipeline = Pipeline(False)

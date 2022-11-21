@@ -12,7 +12,8 @@ SCRAPPER_WORK_PING = 'scrapper.work.ping'
 SCRAPPER_WORK_CANCEL = 'scrapper.work.cancel'
 
 AUTH_TOKEN = "ABCDEFGHIJK"
-URL = "http://localhost:3000"
+URL = "http://zpi.zgrate.ovh:5036"
+# URL = "http://localhost:3000"
 
 sio = socketio.Client()
 
@@ -36,44 +37,38 @@ pipeline = Pipeline(True)
 
 @sio.on(SCRAPPER_AUTH_REQUEST)
 def scrapping_request(data):
-    # print("Here please execute auth link logic and return allegro auth link")
-    logging.info("Otrzymano scrapping_request")
+    if pipeline.status == "running":
+        return {"status": "running", "auth_link": ""}
+    logging.info("[Websocket] Otrzymano scrapping_request")
     auth_data = pipeline.api_auth()
-    Thread(target=pipeline.run, args=[auth_data]).run()
-    return auth_data['verification_uri_complete']
+    Thread(target=pipeline.run, args=[auth_data]).start()
+    return {"status": "ok", "auth_link": auth_data['verification_uri_complete']}
 
 
 @sio.on(SCRAPPER_WORK_PING)
 def scrapping_ping():
-    # print("Here is the logic of responding to work ping. Respond with emmiting SCRAPPER_WORK_STATUS ping")
-    logging.info("Otrzymano scrapping_ping")
+    logging.info("[Websocket] Otrzymano scrapping_ping")
     emit_work_status(pipeline.status, [], None)
 
 
 @sio.on(SCRAPPER_WORK_CANCEL)
 def scrapping_cancel():
-    logging.info("Otrzymano scrapping_cancel")
-    # print("Here is the logic of cancelling scrapping. Respond with emminit SCRAPPER_WORK_STATUS with cannceled")
+    logging.info("[Websocket] Otrzymano scrapping_cancel")
 
 
 @sio.event
 def connect():
-    logging.info("Połączono z adresem " + URL)
-    # print("I'm connected!")
-    # sleep(2)
-    # emit_work_status("ready", ["123", "123123"], "its working")
+    logging.info("[Websocket] Połączono z adresem " + URL)
 
 
 @sio.event
 def connect_error(data):
-    logging.error("Błąd połączenia z adresem " + URL)
-    # print("The connection failed!")
+    logging.error("[Websocket] Błąd połączenia z adresem " + URL)
 
 
 @sio.event
 def disconnect():
-    logging.info("Odłączono od adresu " + URL)
-    # print("I'm disconnected!")
+    logging.info("[Websocket] Odłączono od adresu " + URL)
 
 
 def emit_work_status(status: str, logs: list[str], payload, estimated_time=0, callback=None):
@@ -84,6 +79,6 @@ def emit_work_status(status: str, logs: list[str], payload, estimated_time=0, ca
 
 def start():
     sio.connect(url=URL, headers={"Authorization": AUTH_TOKEN}, transports="websocket", wait_timeout=4)
-    logging.info("Nasłuchiwanie...")
+    logging.info("[Websocket] Nasłuchiwanie...")
     sio.wait()
 

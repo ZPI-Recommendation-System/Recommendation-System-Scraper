@@ -95,7 +95,8 @@ class MergeAllegroGPU(MergeData):
             print("znaleziono blad")
             print(checklist)
         else:
-            print("Nie ma żadnych niepożądanych znakow w tokenach")
+            # print("Nie ma żadnych niepożądanych znakow w tokenach")
+            pass
 
         # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
 
@@ -105,7 +106,8 @@ class MergeAllegroGPU(MergeData):
             print("znaleziono blad")
             print(checklist)
         else:
-            print("Nie ma zadnych wielowyrazowych tokenow")
+            # print("Nie ma zadnych wielowyrazowych tokenow")
+            pass
 
     @staticmethod
     def print_assigns(laptops_data, gpu_benchmark_data):

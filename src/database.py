@@ -218,9 +218,9 @@ def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
             )
             session.add(offer_entity)
 
-    print("Commit started...")
+    # print("Commit started...")
     # session.commit()
-    print("Commit finished!")
+    # print("Commit finished!")
 
 
 def delete_all(metadata, engine):

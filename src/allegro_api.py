@@ -174,9 +174,14 @@ def auth():
     return result
 
 
-def scrape(auth_data):
+def auth2(auth_data):
     access_token = await_for_access_token(int(auth_data['interval']), auth_data['device_code'])
-    print(f"access token = {access_token}")
+    return access_token
+
+
+def scrape(access_token):
+    # access_token = await_for_access_token(int(auth_data['interval']), auth_data['device_code'])
+    # print(f"access token = {access_token}")
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
     data = normalise_products(access_token, products, parameters)
@@ -187,6 +192,6 @@ def scrape(auth_data):
 
 if __name__ == "__main__":
     start = time.time()
-    scrape(auth())
+    scrape(auth2(auth()))
     end = time.time()
     print("Run time: " + str(int((int(end - start) / 60))) + " minutes")
