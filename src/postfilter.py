@@ -4,7 +4,14 @@ import sqlalchemy
 def run_for(clear_laptops, clear_offers):
     clear_offers['Price'] = clear_offers['Price'] \
         .apply(lambda x: x.replace(',', '.')) \
-        .apply(lambda x: int(eval(x.split(' zł')[0].replace(' ', ''))))
+        .apply(lambda x: float(eval(x.split(' zł')[0].replace(' ', ''))))
+
+    rows_to_drop = clear_offers[(clear_offers['Price'] > 11000) | (clear_offers['Price'] < 1000)]
+    clear_offers = clear_offers.drop(rows_to_drop.index)
+
+    laptop_names_to_drop = rows_to_drop['Name'].tolist()
+    rows_to_drop = clear_laptops[clear_laptops['Name'].isin(laptop_names_to_drop)]
+    clear_laptops = clear_laptops.drop(rows_to_drop.index)
 
     list_columns = {'Komunikacja', 'Złącza', 'Multimedia', 'Sterowanie', 'Typ napędu', 'Zdjęcia'}
 

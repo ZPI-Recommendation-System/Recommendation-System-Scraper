@@ -1,8 +1,10 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from statistics import median
 
 from db.entities import *
+from src import benchmarks, postfilter
 from src.constants import CPU_BENCHMARKS_CSV, GPU_BENCHMARKS_CSV, DATABASE_URL
 from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
 from src.merge_benchmarks.mergeGPUData import MergeAllegroGPU
@@ -176,6 +178,12 @@ def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
 
         session.add_all(communication_entities)
 
+        model_offers = offers.loc[offers['Name'] == row['Name']]
+        model_price = median(model_offers['Price'].tolist())
+        # model_price = 0
+        model_price_source = "allegro"
+        # model_price_source = "unknown"
+
         model_entity.id = row['ID']
         model_entity.name = row['Name']
         model_entity.model = row['Model']
@@ -203,24 +211,14 @@ def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
         model_entity.screen_entity = screen_entity
         model_entity.multimedia_entity = multimedia_entities
         model_entity.model_img_entity = model_img_entities
+        model_entity.price = model_price
+        model_entity.priceSource = model_price_source
 
         session.add(model_entity)
 
-        model_offers = offers.loc[offers['Name'] == row['Name']]
-
-        for index, offer in model_offers.iterrows():
-
-            offer_entity = OfferEntity(
-                offerName=offer['Name'],
-                offerPrice=offer['Price'],
-                offerURL=offer['URL'],
-                model_entity=model_entity
-            )
-            session.add(offer_entity)
-
-    # print("Commit started...")
-    # session.commit()
-    # print("Commit finished!")
+    print("Commit started...")
+    session.commit()
+    print("Commit finished!")
 
 
 def delete_all(metadata, engine):
@@ -233,5 +231,13 @@ def update(laptops, offers, cpu_benchmarks, gpu_benchmarks):
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    # delete_all(metadata, engine)
+    delete_all(metadata, engine)
     insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks)
+
+
+if __name__ == "__main__":
+    laptops = pd.read_csv("clear-laptops2.csv")
+    offers = pd.read_csv("clear-offers2.csv")
+    laptops, offers = postfilter.run_for(laptops, offers)
+    cpu_benchmarks, gpu_benchmarks = benchmarks.get()
+    update(laptops, offers, cpu_benchmarks, gpu_benchmarks)
