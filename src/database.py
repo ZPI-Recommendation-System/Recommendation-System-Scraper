@@ -10,7 +10,7 @@ from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
 from src.merge_benchmarks.mergeGPUData import MergeAllegroGPU
 
 
-def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
+def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
     cpu_benchmarks = MergeAllegroCPU.print_assigns(laptops, cpu_benchmarks)
     added_cpu_benchmarks = dict()
 
@@ -178,11 +178,11 @@ def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
 
         session.add_all(communication_entities)
 
-        model_offers = offers.loc[offers['Name'] == row['Name']]
-        model_price = median(model_offers['Price'].tolist())
-        # model_price = 0
-        model_price_source = "allegro"
-        # model_price_source = "unknown"
+        # model_offers = offers.loc[offers['Name'] == row['Name']]
+        # model_price = round(median(model_offers['Price'].tolist()), 2)
+        model_price = 0
+        # model_price_source = "allegro"
+        model_price_source = "unknown"
 
         model_entity.id = row['ID']
         model_entity.name = row['Name']
@@ -221,23 +221,33 @@ def insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks):
     print("Commit finished!")
 
 
-def delete_all(metadata, engine):
+def delete_all(metadata, engine, session):
     for table in reversed(metadata.sorted_tables):
         engine.execute(table.delete())
 
+    # try:
+    #     num_rows_deleted = session.query(ModelEntity).delete()
+    # except:
+    #     session.rollback()
 
-def update(laptops, offers, cpu_benchmarks, gpu_benchmarks):
+def update(laptops, cpu_benchmarks, gpu_benchmarks):
     engine = create_engine(DATABASE_URL)
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    delete_all(metadata, engine)
-    insert_all(session, laptops, offers, cpu_benchmarks, gpu_benchmarks)
+    delete_all(metadata, engine, session)
+    session.commit()
+    insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks)
 
 
 if __name__ == "__main__":
+    # laptops = pd.read_csv("clear-laptops2.csv")
+    # offers = pd.read_csv("clear-offers2.csv")
+    # laptops, offers = postfilter.run_for(laptops, offers)
+    # cpu_benchmarks, gpu_benchmarks = benchmarks.get()
+    # update(laptops, offers, cpu_benchmarks, gpu_benchmarks)
+
     laptops = pd.read_csv("clear-laptops2.csv")
-    offers = pd.read_csv("clear-offers2.csv")
-    laptops, offers = postfilter.run_for(laptops, offers)
+    laptops = postfilter.run_for(laptops)
     cpu_benchmarks, gpu_benchmarks = benchmarks.get()
-    update(laptops, offers, cpu_benchmarks, gpu_benchmarks)
+    update(laptops, cpu_benchmarks, gpu_benchmarks)

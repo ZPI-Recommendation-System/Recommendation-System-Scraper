@@ -2,7 +2,7 @@
 
 FROM python:3.10
 
-WORKDIR /scraper-app
+WORKDIR /scraper
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
