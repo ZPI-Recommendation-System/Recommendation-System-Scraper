@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 
-from src import prefilter, merge_offers, postfilter, database, allegro_api, benchmarks, websockets
+from src import prefilter, merge_offers, postfilter, database, allegro_api, benchmarks, websockets, price_predictor
 from src.constants import INPUT_OFFERS_CSV, OUTPUT_CSV
 from timeit import default_timer as timer
 from datetime import timedelta, datetime
@@ -42,20 +42,17 @@ class Pipeline:
                 self.log(self.status, "Wstępne filtrowanie danych...")
                 prefiltered_laptops = prefilter.run_for(laptops)
                 self.log(self.status, "Gotowe!")
-                # self.log(self.status, "Łączenie modeli z ofertami...")
-                # clear_laptops, clear_offers = merge_offers.run_for(prefiltered_laptops, INPUT_OFFERS_CSV)
-                # self.log(self.status, "Gotowe!")
                 self.log(self.status, "Czyszczenie danych...")
                 clear_laptops = postfilter.run_for(prefiltered_laptops)
                 self.log(self.status, "Gotowe!")
                 self.log(self.status, "Pobieranie danych benchmarków...")
                 cpu_benchmarks, gpu_benchmarks = benchmarks.get()
                 self.log(self.status, "Gotowe!")
-                # self.log(self.status, "Ustalanie cen modeli...")
-                #
-                # self.log(self.status, "Gotowe!")
+                self.log(self.status, "Ustalanie cen modeli...")
+                clear_laptops = price_predictor.run_for(clear_laptops)
+                self.log(self.status, "Gotowe!")
                 self.log(self.status, "Aktualizowanie bazy danych...")
-                # database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
+                database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
                 self.log(self.status, "Gotowe!")
                 end = timer()
                 time = str(timedelta(seconds=end - start))

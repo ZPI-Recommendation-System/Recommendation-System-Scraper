@@ -9,6 +9,8 @@ from src.constants import CPU_BENCHMARKS_CSV, GPU_BENCHMARKS_CSV, DATABASE_URL
 from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
 from src.merge_benchmarks.mergeGPUData import MergeAllegroGPU
 
+entities = [t_model_entity_communications_communication_entity, t_model_entity_connections_connection_entity, t_model_entity_controls_control_entity, t_model_entity_drives_drive_type_entity, t_model_entity_images_model_img_entity, t_model_entity_multimedia_multimedia_entity, t_model_entity_images_model_img_entity, ModelEntity, ModelImgEntity, CommunicationEntity, ConnectionEntity, ControlEntity, DriveTypeEntity, ScreenEntity, MultimediaEntity, GraphicsEntity, ProcessorEntity, BenchmarkEntity]
+
 
 def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
     cpu_benchmarks = MergeAllegroCPU.print_assigns(laptops, cpu_benchmarks)
@@ -178,12 +180,6 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
 
         session.add_all(communication_entities)
 
-        # model_offers = offers.loc[offers['Name'] == row['Name']]
-        # model_price = round(median(model_offers['Price'].tolist()), 2)
-        model_price = 0
-        # model_price_source = "allegro"
-        model_price_source = "unknown"
-
         model_entity.id = row['ID']
         model_entity.name = row['Name']
         model_entity.model = row['Model']
@@ -206,29 +202,31 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
         model_entity.driveStorage = row['Pojemność dysku']
         model_entity.driveType = row['Typ dysku twardego']
         model_entity.hddSpeed = row['Prędkość obrotowa dysku HDD']
+        model_entity.price = row['price']
+        model_priceSource = row['priceSource']
         model_entity.processor_entity = processor_entity
         model_entity.graphics_entity = graphics_entity
         model_entity.screen_entity = screen_entity
         model_entity.multimedia_entity = multimedia_entities
         model_entity.model_img_entity = model_img_entities
-        model_entity.price = model_price
-        model_entity.priceSource = model_price_source
 
         session.add(model_entity)
 
     print("Commit started...")
-    session.commit()
+    # session.commit()
     print("Commit finished!")
 
 
 def delete_all(metadata, engine, session):
-    for table in reversed(metadata.sorted_tables):
-        engine.execute(table.delete())
-
-    # try:
-    #     num_rows_deleted = session.query(ModelEntity).delete()
-    # except:
-    #     session.rollback()
+    # for table in reversed(metadata.sorted_tables):
+    #     engine.execute(table.delete())
+    try:
+        for entity in entities:
+            num_rows_deleted = session.query(entity).delete()
+            print(num_rows_deleted)
+    except:
+        session.rollback()
+        raise
 
 def update(laptops, cpu_benchmarks, gpu_benchmarks):
     engine = create_engine(DATABASE_URL)
@@ -236,7 +234,6 @@ def update(laptops, cpu_benchmarks, gpu_benchmarks):
     Session = sessionmaker(bind=engine)
     session = Session()
     delete_all(metadata, engine, session)
-    session.commit()
     insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks)
 
 
