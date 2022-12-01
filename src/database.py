@@ -223,7 +223,6 @@ def delete_all(metadata, engine, session):
     try:
         for entity in entities:
             num_rows_deleted = session.query(entity).delete()
-            print(num_rows_deleted)
     except:
         session.rollback()
         raise
