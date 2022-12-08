@@ -35,29 +35,6 @@ class MergeAllegroCPU(MergeData):
         benchmark_data[tokens_col] = benchmark_data[tokens_col].str.replace(r"[-]", ' ', regex=True)
         benchmark_data[tokens_col] = self.create_laptop_token_column(benchmark_data)
 
-    def test_tokens(self, laptops_data, benchmark_data):
-        # Sprawdzenie czy gdzies zostaly jakiekolwiek niepożądane znaki
-
-        checks = [x if re.findall(r"[\[\]'!@#$\";()\s]", x) else None for sublist in benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
-        checklist = [x for x in checks if x is not None]
-        if len(checklist) > 0:
-            print("znaleziono blad")
-            print(checklist)
-        else:
-            # print("Nie ma żadnych niepożądanych znakow w tokenach")
-            pass
-
-        # Sprawdzenie czy gdzies jest wiecej niz 1 wyraz w tokenie
-
-        checks = [x if len(x.split()) > 1 else None for sublist in benchmark_data[TOKENS_CPU_COL_NAME] for x in sublist]
-        checklist = [x for x in checks if x is not None]
-        if len(checklist) > 0:
-            print("znaleziono blad")
-            print(checklist)
-        else:
-            # print("Nie ma zadnych wielowyrazowych tokenow")
-            pass
-
 
     @staticmethod
     def print_assigns(laptops_data, cpu_benchmark_data):

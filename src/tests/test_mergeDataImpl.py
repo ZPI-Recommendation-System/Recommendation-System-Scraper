@@ -200,13 +200,21 @@ class TestsMergeDataComponents:
     @pytest.fixture(scope='function')
     def dataset(self, laptops_data, benchmark_data, positions_dict):
         obj = MergeDataComponentsImpl()
-        obj.create_vectors(laptops_data, benchmark_data, positions_dict, vector_col=VECTORS_GPU_COLUMN, vector_ones_col=VECTORS_GPU_ONES_COLUMN, tokens_col=TOKENS_GPU_COL_NAME)
+        obj.create_vectors(laptops_data, benchmark_data, positions_dict,
+                           vector_col=VECTORS_GPU_COLUMN,
+                           vector_ones_col=VECTORS_GPU_ONES_COLUMN,
+                           tokens_col=TOKENS_GPU_COL_NAME)
         return laptops_data, benchmark_data
 
     def test_create_assignment_dict(self, dataset):
         laptops_data = dataset[0]
         benchmark_data = dataset[1]
         obj = MergeDataComponentsImpl()
-        assignment_dict = obj.create_assignment_dict(laptops_data, benchmark_data, LAPTOP_GPU_NAME_COLUMN, TOKENS_GPU_COL_NAME, VECTORS_GPU_COLUMN, VECTORS_GPU_ONES_COLUMN)
+        assignment_dict = obj.create_assignment_dict(laptops_data,
+                                                     benchmark_data,
+                                                     LAPTOP_GPU_NAME_COLUMN,
+                                                     TOKENS_GPU_COL_NAME,
+                                                     VECTORS_GPU_COLUMN,
+                                                     VECTORS_GPU_ONES_COLUMN)
         # pprint(assignment_dict)
         assert assignment_dict["['AMD Radeon Pro 5300M']"].Model == 'Radeon Pro 5300M'
