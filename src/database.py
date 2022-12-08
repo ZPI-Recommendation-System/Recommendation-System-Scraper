@@ -1,11 +1,10 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from statistics import median
 
 from db.entities import *
 from src import benchmarks, postfilter
-from src.constants import CPU_BENCHMARKS_CSV, GPU_BENCHMARKS_CSV, DATABASE_URL
+from src.constants import DATABASE_URL
 from src.merge_benchmarks.mergeCPUData import MergeAllegroCPU
 from src.merge_benchmarks.mergeGPUData import MergeAllegroGPU
 
@@ -213,11 +212,11 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
         session.add(model_entity)
 
     print("Commit started...")
-    # session.commit()
+    session.commit()
     print("Commit finished!")
 
 
-def delete_all(metadata, engine, session):
+def delete_all(session):
     # for table in reversed(metadata.sorted_tables):
     #     engine.execute(table.delete())
     try:
@@ -232,17 +231,18 @@ def update(laptops, cpu_benchmarks, gpu_benchmarks):
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    delete_all(metadata, engine, session)
-    insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks)
+    try:
+        delete_all(session)
+        session.flush()
+        insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks)
+    except Exception as ex:
+        session.rollback()
+        raise Exception("Błąd podczas aktualizacji bazy danych: " + str(ex))
+
+    session.close()
 
 
 if __name__ == "__main__":
-    # laptops = pd.read_csv("clear-laptops2.csv")
-    # offers = pd.read_csv("clear-offers2.csv")
-    # laptops, offers = postfilter.run_for(laptops, offers)
-    # cpu_benchmarks, gpu_benchmarks = benchmarks.get()
-    # update(laptops, offers, cpu_benchmarks, gpu_benchmarks)
-
     laptops = pd.read_csv("clear-laptops2.csv")
     laptops = postfilter.run_for(laptops)
     cpu_benchmarks, gpu_benchmarks = benchmarks.get()

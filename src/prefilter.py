@@ -1,6 +1,7 @@
 def run_for(laptops):
     unused_columns = ['EAN (GTIN)', 'Taktowanie maksymalne procesora', 'Pamięć podręczna procesora', 'Interfejs dysku', 'Technologia akumulatora', 'Liczba komór akumulatora', 'Cechy dodatkowe', 'Materiał', 'Waga produktu z opakowaniem jednostkowym']
     laptops = laptops.drop(columns=unused_columns)
+    laptops = laptops.drop_duplicates(subset=['ID'])
 
     id_condition = (laptops['ID'].isnull()) | (laptops['Name'].isnull()) | (laptops['Model'].isnull())
     display_condition = laptops['Przekątna ekranu'].isnull()

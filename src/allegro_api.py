@@ -187,6 +187,7 @@ def scrape(access_token):
     data = normalise_products(access_token, products, parameters)
     data = pd.DataFrame(data)
     dump_to_csv(data)
+    data = pd.read_csv(OUTPUT_CSV)
     return data
 
 
