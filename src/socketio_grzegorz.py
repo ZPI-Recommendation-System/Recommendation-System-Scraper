@@ -2,7 +2,7 @@ from time import sleep
 
 import socketio
 
-SCRAPPER_AUTH_REQUEST = 'scrapper.auth.request'
+SCRAPPER_JOB_REQUEST = 'scrapper.auth.request'
 SCRAPPER_WORK_STATUS = 'scrapper.work.status'
 SCRAPPER_WORK_PING = 'scrapper.work.ping'
 SCRAPPER_WORK_CANCEL = 'scrapper.work.cancel'
@@ -14,22 +14,24 @@ sio = socketio.Client()
 
 
 # export type WorkStatus =
-# | 'authorised'
-# | 'running'
-# | 'finished'
-# | 'error'
-# | 'cancelled'
-# | 'ready';
+# | 'waiting_for_job' -> Emit on job started, but waiting for any admin input
+# | 'authorised' -> Emit on authorisation successful
+# | 'running' -> Emit while working
+# | 'finished' -> Emit while finished
+# | 'error' -> Emit on error
+# | 'cancelled' -> emit on cancel
+# | 'ready'; -> Emit on no job pending
 #
 # export interface ScrapperWorkStatusDto {
-#   workStatus: WorkStatus;
-#   estimatedTime: number;
-#   payload: any;
-#   logs: string[];
+#   jobName: string; <- nazwa zadania
+#   workStatus: WorkStatus; <- status zadania
+#   estimatedTime: number; <- ile czasu do końca zadania
+#   payload: any; <- dodatkowe rzeczy, ostatni payload jest wysyłany do frontendu
+#   logs: string[]; <- logi, wszystkie logi są przechowywane do następnego "waiting_for_job"
 # }
 
-@sio.on(SCRAPPER_AUTH_REQUEST)
-def scrapping_request(data):
+@sio.on(SCRAPPER_JOB_REQUEST)
+def scrapping_job_request(payload):  # payload -> backend/frontend może wysyłać tym jakieś dodatkowe argumenty
     print("Here please execute auth link logic and return allegro auth link")
     return "allegro_link"
 
