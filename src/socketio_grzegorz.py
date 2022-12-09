@@ -30,8 +30,14 @@ sio = socketio.Client()
 #   logs: string[]; <- logi, wszystkie logi są przechowywane do następnego "waiting_for_job"
 # }
 
+# export interface JobRequest{
+# jobName: string;
+# payload: any;
+# }
+
 @sio.on(SCRAPPER_JOB_REQUEST)
-def scrapping_job_request(payload):  # payload -> backend/frontend może wysyłać tym jakieś dodatkowe argumenty
+def scrapping_job_request(
+        jobRequest):  # jobRequest -> backend/frontend może wysyłać tym jakieś dodatkowe argumenty.. Typ JobRequest, więc w tym jest jobName i payload
     print("Here please execute auth link logic and return allegro auth link")
     return "allegro_link"
 
