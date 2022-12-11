@@ -67,12 +67,6 @@ class MergeDataComponentsImpl(MergeDataComponents):
 
             min_benchmark = min(duplicates_by_score, key=lambda x: x.Benchmark.Benchmark)
 
-            # print(laptop.Model_procesora)
-            # print('assignments ******************************************************************')
-            # display(assigned_scores[:10])
-            # print('duplicates ******************************************************************')
-            # display(duplicates_by_score)
-
             if min_benchmark.Cosine_Score != 0:
                 assignments[getattr(laptop, component_col)] = min_benchmark
             else:

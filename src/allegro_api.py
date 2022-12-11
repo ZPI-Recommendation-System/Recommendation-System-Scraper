@@ -5,7 +5,6 @@ import time
 import pandas as pd
 import requests
 
-from src import websockets
 from src.constants import CLIENT_ID, TOKEN_URL, LAPTOP_CATEGORY, CATEGORIES_URL, \
     PARTICULAR_PRODUCT_URL, PRODUCTS_URL, OUTPUT_CSV, CODE_URL, CLIENT_SECRET
 
@@ -105,11 +104,15 @@ def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
         all_products.append(products)
     page_id = get_next_page(products_response)
     while page_id is not None:
-        products_response = get_products(access_token, category_id, page_id)
-        if 'products' in products_response and products_response['products'] is not None:
-            products = products_response['products']
-            all_products.append(products)
-        page_id = get_next_page(products_response)
+        try:
+            products_response = get_products(access_token, category_id, page_id)
+            if 'products' in products_response and products_response['products'] is not None:
+                products = products_response['products']
+                all_products.append(products)
+            page_id = get_next_page(products_response)
+        except Exception as err:
+            logging.error(str(err), exc_info=True, stack_info=True)
+            break
     return all_products
 
 
@@ -133,7 +136,7 @@ def normalise_products(access_token, products_pages, parameters):
                 product_parameters = product['parameters']
                 for product_parameter in product_parameters:
                     param = product_parameter['name']
-                    if param in data:
+                    if param in data and param in null_columns:
                         null_columns.remove(param)
                         data[param].append(str(product_parameter['valuesLabels']))
                 for column in null_columns:
@@ -157,7 +160,7 @@ def print_product_console(data):
 
 
 def get_next_page(products):
-    if products['nextPage'] is not None:
+    if 'nextPage' in products and products['nextPage'] is not None:
         if products['nextPage']['id'] is not None:
             return products['nextPage']['id']
     return None
@@ -180,8 +183,6 @@ def auth2(auth_data):
 
 
 def scrape(access_token):
-    # access_token = await_for_access_token(int(auth_data['interval']), auth_data['device_code'])
-    # print(f"access token = {access_token}")
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
     products = get_all_products(access_token, LAPTOP_CATEGORY)
     data = normalise_products(access_token, products, parameters)
