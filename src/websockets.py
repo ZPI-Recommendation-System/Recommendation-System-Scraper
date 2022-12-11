@@ -12,6 +12,7 @@ SCRAPPER_WORK_CANCEL = 'scrapper.work.cancel'
 
 AUTH_TOKEN = "ABCDEFGHIJK"
 URL = "http://zpi.zgrate.ovh:5036"
+# URL = "http://backend:3000"
 # URL = "http://localhost:3000"
 
 sio = socketio.Client()
@@ -62,7 +63,7 @@ def connect():
 
 @sio.event
 def connect_error(data):
-    logging.error("[Websocket] Błąd połączenia z adresem " + URL)
+    logging.error("[Websocket] Brak połączenia z adresem " + URL)
 
 
 @sio.event
@@ -77,7 +78,13 @@ def emit_work_status(status: str, logs: list[str], payload, estimated_time=0, ca
 
 
 def start():
-    sio.connect(url=URL, headers={"Authorization": AUTH_TOKEN}, transports="websocket", wait_timeout=4)
+    while True:
+        try:
+            sio.connect(url=URL, headers={"Authorization": AUTH_TOKEN}, transports="websocket", wait=True, wait_timeout=120)
+            break
+        except:
+            sio.sleep(20)
+            continue
     logging.info("[Websocket] Nasłuchiwanie...")
     sio.wait()
 

@@ -208,6 +208,8 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
         model_entity.screen_entity = screen_entity
         model_entity.multimedia_entity = multimedia_entities
         model_entity.model_img_entity = model_img_entities
+        model_entity.estimatedScore = 0
+        model_entity.estimatedPopularity = 0
 
         session.add(model_entity)
 
@@ -217,8 +219,6 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
 
 
 def delete_all(session):
-    # for table in reversed(metadata.sorted_tables):
-    #     engine.execute(table.delete())
     try:
         for entity in entities:
             num_rows_deleted = session.query(entity).delete()

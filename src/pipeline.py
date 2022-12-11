@@ -2,22 +2,18 @@ import logging
 from datetime import timedelta, datetime
 from timeit import default_timer as timer
 
-import pandas as pd
-
-from src import prefilter, postfilter, database, allegro_api, benchmarks, websockets, price_predictor
+from src import allegro_api, websockets, price_predictor, prefilter, postfilter, benchmarks, database
 
 
 class Pipeline:
     def __init__(self, isWebsocket):
         self.status = "ready"
         self.isWebsocket = isWebsocket
-        # logging.info("[Scraper] Scraper jest gotowy do pracy")
 
     def api_auth(self):
         self.status = "running"
         logging.info("[Scraper] Scraper rozpoczął pracę")
         auth_data = allegro_api.auth()
-        # TODO czy przesyłać logi z linkiem
         self.log(status="waiting_for_auth", message="Rozpoczęto operację aktualizacji bazy danych")
         self.log(status="waiting_for_auth", message="Link do autoryzacji:")
         self.log(status="waiting_for_auth", message=str(auth_data['verification_uri_complete']))
@@ -27,13 +23,35 @@ class Pipeline:
         self.status = "running"
         tries = 0
         start = timer()
-        while True:
+
+        access_token = None
+
+        while access_token is None:
             try:
                 self.log("waiting_for_auth", "Oczekiwanie na autoryzację...")
                 access_token = allegro_api.auth2(auth_data)
                 if self.isWebsocket:
                     websockets.emit_work_status("authorised", [], None)
                 self.log(self.status, "Gotowe!")
+            except Exception as err:
+                self.log("error", "Wystąpił błąd podczas autoryzacji: " + str(err))
+                if tries < 3:
+                    tries += 1
+                    self.log("running", "Ponawianie autoryzacji (próba nr " + str(tries) + ")...")
+                    continue
+                else:
+                    end = timer()
+                    time = str(timedelta(seconds=end - start))
+                    logging.error("Operacja autoryzacji zakończona błędem")
+                    logging.info("Czas trwania: " + time)
+                    if self.isWebsocket:
+                        websockets.emit_work_status("error", ["Operacja autoryzacji zakończona błędem"], None)
+                        websockets.emit_work_status("info", ["Czas trwania: " + time], None)
+                        websockets.emit_work_status("finished", [], None)
+                    break
+
+        while access_token is not None:
+            try:
                 self.log(self.status, "Pobieranie laptopów...")
                 laptops = allegro_api.scrape(access_token)
                 # laptops = pd.read_csv("resources/laptops_2.csv")
@@ -47,11 +65,9 @@ class Pipeline:
                 self.log(self.status, "Pobieranie danych benchmarków...")
                 cpu_benchmarks, gpu_benchmarks = benchmarks.get()
                 self.log(self.status, "Gotowe!")
-                self.log(self.status, "Ustalanie cen modeli...")
-                clear_laptops = price_predictor.run_for(clear_laptops)
-                self.log(self.status, "Gotowe!")
                 self.log(self.status, "Aktualizowanie bazy danych...")
                 database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
+                price_predictor.run(True)
                 self.log(self.status, "Gotowe!")
                 end = timer()
                 time = str(timedelta(seconds=end - start))
@@ -84,7 +100,7 @@ class Pipeline:
 
     def log(self, status, message):
         if status == "error":
-            logging.error(message)
+            logging.error(message, exc_info=True, stack_info=True)
         else:
             logging.info(message)
 

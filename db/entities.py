@@ -89,6 +89,8 @@ class ModelEntity(Base):
     driveStorage = Column(Integer, nullable=False)
     driveType = Column(String)
     hddSpeed = Column(Integer)
+    estimatedScore = Column(Integer)
+    estimatedPopularity = Column(Integer)
     price = Column(Float(53), nullable=False)
     priceSource = Column(String, nullable=False, server_default=text("'unknown'::character varying"))
     processorId = Column(ForeignKey('processor_entity.id'))

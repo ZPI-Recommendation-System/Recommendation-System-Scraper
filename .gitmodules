@@ -1,0 +1,3 @@
+[submodule "src/ml_module"]
+	path = src/ml_module
+	url = https://github.com/ZPI-Recommendation-System/Recommendation-System-MachineLearning.git

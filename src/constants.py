@@ -1,4 +1,8 @@
+import os
 from collections import namedtuple
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # merge_benchmarks
 CosineScore = namedtuple('CosineScore', ['Model', 'Cosine_Score', 'Benchmark'])
@@ -15,13 +19,13 @@ BRAND_BENCHMARK_COLUMN = 'Brand'
 MODEL_BENCHMARK_COLUMN = 'Model'
 
 # allegro_api
-CLIENT_ID = "473bd2ed049f4d4d815fe720b98ddc2d"
-CLIENT_SECRET = "IOogn5eBhxmSSu8pnKDnwhXIkKIq8iBKngqkoOciMMgYTHs3qWRQi4vBir168ysd"
-CODE_URL = "https://allegro.pl/auth/oauth/device"
-TOKEN_URL = "https://allegro.pl/auth/oauth/token"
-PRODUCTS_URL = "https://api.allegro.pl/sale/products"
-CATEGORIES_URL = "https://api.allegro.pl/sale/categories/{categoryId}/product-parameters"
-PARTICULAR_PRODUCT_URL = "https://api.allegro.pl/sale/products/{productId}"
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
+CODE_URL = "https://" + os.environ['DATA_API'] + "/auth/oauth/device"
+TOKEN_URL = "https://" + os.environ['DATA_API'] + "/auth/oauth/token"
+PRODUCTS_URL = "https://api." + os.environ['DATA_API'] + "/sale/products"
+CATEGORIES_URL = "https://api." + os.environ['DATA_API'] + "/sale/categories/{categoryId}/product-parameters"
+PARTICULAR_PRODUCT_URL = "https://api." + os.environ['DATA_API'] + "/sale/products/{productId}"
 LAPTOP_CATEGORY = "491"
 OUTPUT_CSV = "resources/laptops.csv"
 
@@ -32,7 +36,7 @@ CPU_BENCHMARKS_CSV = "resources/CPU_UserBenchmarks.csv"
 GPU_BENCHMARKS_CSV = "resources/GPU_UserBenchmarks.csv"
 
 # database
-DATABASE_URL = 'postgresql://backend:backend123@zpi.zgrate.ovh:5035/recommendation-system'
+DATABASE_URL = 'postgresql://' + os.environ['DB_USER'] + ':' + os.environ['DB_PASS'] + '@' + os.environ['DB_HOST'] + ':' + os.environ['DB_PORT'] + '/' + os.environ['DB_DB']
 
 # merge_offers
 OUTPUT_CLEAR_LAPTOPS_CSV = "resources/clear-laptops.csv"

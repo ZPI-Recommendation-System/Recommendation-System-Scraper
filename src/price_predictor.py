@@ -1,15 +1,17 @@
-import random
+import os
+import sys
 
-import pandas as pd
+sys.path.append(os.path.join(os.getcwd(), "src/ml_module"))
 
 
-# Mock
-def run_for(laptops):
-    laptops['price'] = pd.NaT
-    laptops['priceSource'] = ""
+def run(while_scraping=False):
+    try:
+        from src.ml_module import evaluator
+        evaluator.process()
+    except FileNotFoundError as err:
+        if while_scraping:
+            return
+        raise err
 
-    for index, row in laptops.iterrows():
-        laptops.at[index, 'priceSource'] = "generated"
-        laptops.at[index, 'price'] = round(random.uniform(1000.00, 11000.00), 2)
-
-    return laptops
+if __name__ == "__main__":
+    run(False)
