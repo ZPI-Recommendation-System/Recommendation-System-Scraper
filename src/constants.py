@@ -45,6 +45,8 @@ OUTPUT_CLEAR_OFFERS_CSV = "resources/clear-offers.csv"
 # pipeline
 INPUT_OFFERS_CSV = "resources/offers.csv"
 
-# postfilter
-
-# prefilter
+# websockets
+AUTH_TOKEN = os.environ['AUTH_TOKEN']
+# BACKEND_URL = "http://zpi.zgrate.ovh:5036"
+BACKEND_URL = os.environ['BACKEND_URL']
+# BACKEND_URL = "http://localhost:3000"

@@ -3,17 +3,20 @@ from threading import Thread
 
 import socketio
 
+from src import ml_learn, ml_label, clear_db
+from src.constants import BACKEND_URL, AUTH_TOKEN
 from src.pipeline import Pipeline
 
-SCRAPPER_AUTH_REQUEST = 'scrapper.auth.request'
-SCRAPPER_WORK_STATUS = 'scrapper.work.status'
-SCRAPPER_WORK_PING = 'scrapper.work.ping'
-SCRAPPER_WORK_CANCEL = 'scrapper.work.cancel'
+JOB_SCRAPE = "scrapper.job.scrape"
+JOB_ML_LEARN = "scrapper.job.ml.learn"
+JOB_ML_LABEL = "scrapper.job.ml.label"
+JOB_CLEAR_DB = "scrapper.job.clear.db"
+JOB_STATUS = "scrapper.job.status"
 
-AUTH_TOKEN = "ABCDEFGHIJK"
-URL = "http://zpi.zgrate.ovh:5036"
-# URL = "http://backend:3000"
-# URL = "http://localhost:3000"
+SCRAPER_AUTH_REQUEST = 'scrapper.auth.request'
+SCRAPER_WORK_STATUS = 'scrapper.work.status'
+SCRAPER_STATUS_PING = 'scrapper.work.ping'
+SCRAPER_WORK_CANCEL = 'scrapper.work.cancel'
 
 sio = socketio.Client()
 
@@ -35,52 +38,83 @@ pipeline = Pipeline(True)
 #   logs: string[];
 # }
 
-@sio.on(SCRAPPER_AUTH_REQUEST)
-def scrapping_request(data):
+auth_link = ""
+isRunning = False
+job = ""
+
+@sio.on(SCRAPER_AUTH_REQUEST)
+@sio.on(JOB_SCRAPE)
+def scrape_request():
+    global isRunning, job, auth_link
+    isRunning = True
+    job = "scrape"
     if pipeline.status == "running":
-        return {"status": "running", "auth_link": ""}
+        return {"status": "running", "auth_link": auth_link}
     logging.info("[Websocket] Otrzymano scrapping_request")
     auth_data = pipeline.api_auth()
     Thread(target=pipeline.run, args=[auth_data]).start()
-    return {"status": "ok", "auth_link": auth_data['verification_uri_complete']}
+    auth_link = auth_data['verification_uri_complete']
+    return {"status": "ok", "auth_link": auth_link}
 
 
-@sio.on(SCRAPPER_WORK_PING)
-def scrapping_ping():
-    logging.info("[Websocket] Otrzymano scrapping_ping")
-    emit_work_status(pipeline.status, [], None)
+@sio.on(JOB_ML_LEARN)
+def ml_learn_request():
+    global isRunning, job
+    isRunning = True
+    job = "ml_learn"
+    ml_learn.run()
+
+@sio.on(JOB_ML_LABEL)
+def ml_learn_request():
+    global isRunning, job
+    isRunning = True
+    job = "ml_label"
+    ml_label.run()
+
+@sio.on(JOB_CLEAR_DB)
+def ml_learn_request():
+    global isRunning, job
+    isRunning = True
+    job = "clear_db"
+    clear_db.run()
+
+def emit_scraper_status():
+    sio.emit(SCRAPER_WORK_STATUS, {'isRunning': isRunning, 'job': job}, callback = None)
 
 
-@sio.on(SCRAPPER_WORK_CANCEL)
+@sio.on(SCRAPER_STATUS_PING)
+def scraper_status():
+    logging.info("[Websocket] Otrzymano SCRAPER_STATUS_PING")
+    emit_scraper_status()
+
+
+@sio.on(SCRAPER_WORK_CANCEL)
 def scrapping_cancel():
     logging.info("[Websocket] Otrzymano scrapping_cancel")
 
 
 @sio.event
 def connect():
-    logging.info("[Websocket] Połączono z adresem " + URL)
+    logging.info("[Websocket] Połączono z adresem " + BACKEND_URL)
 
 
 @sio.event
 def connect_error(data):
-    logging.error("[Websocket] Brak połączenia z adresem " + URL)
+    logging.error("[Websocket] Brak połączenia z adresem " + BACKEND_URL)
 
 
 @sio.event
 def disconnect():
-    logging.info("[Websocket] Odłączono od adresu " + URL)
+    logging.info("[Websocket] Odłączono od adresu " + BACKEND_URL)
 
-
-def emit_work_status(status: str, logs: list[str], payload, estimated_time=0, callback=None):
-    sio.emit(SCRAPPER_WORK_STATUS,
-             {'workStatus': status, 'logs': logs, 'payload': payload, "estimatedTime": estimated_time},
-             callback=callback)
+def emit_job_status(job: str, status: str, logs: list[str], payload=None, estimated_time=0, callback=None):
+    sio.emit(JOB_STATUS, {'job': job, 'status': status, 'logs': logs, 'payload': payload, "estimatedTime": estimated_time}, callback=callback)
 
 
 def start():
     while True:
         try:
-            sio.connect(url=URL, headers={"Authorization": AUTH_TOKEN}, transports="websocket", wait=True, wait_timeout=120)
+            sio.connect(url=BACKEND_URL, headers={"Authorization": AUTH_TOKEN}, transports="websocket", wait=True, wait_timeout=120)
             break
         except:
             sio.sleep(20)
