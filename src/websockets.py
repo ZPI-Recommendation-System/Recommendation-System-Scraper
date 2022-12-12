@@ -3,7 +3,6 @@ from threading import Thread
 
 import socketio
 
-from src import ml_learn, ml_label, clear_db
 from src.constants import BACKEND_URL, AUTH_TOKEN
 from src.pipeline import Pipeline
 
@@ -62,6 +61,7 @@ def ml_learn_request():
     global isRunning, job
     isRunning = True
     job = "ml_learn"
+    from src import ml_learn
     ml_learn.run()
 
 @sio.on(JOB_ML_LABEL)
@@ -69,6 +69,7 @@ def ml_learn_request():
     global isRunning, job
     isRunning = True
     job = "ml_label"
+    from src import ml_label
     ml_label.run()
 
 @sio.on(JOB_CLEAR_DB)
@@ -76,6 +77,7 @@ def ml_learn_request():
     global isRunning, job
     isRunning = True
     job = "clear_db"
+    from src import clear_db
     clear_db.run()
 
 def emit_scraper_status():
