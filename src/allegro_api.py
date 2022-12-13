@@ -32,7 +32,9 @@ def get_access_token(device_code):
 
 
 def await_for_access_token(interval, device_code):
-    while True:
+    i = 0
+    while i < 60:
+        i += 1
         time.sleep(interval)
         result_access_token = get_access_token(device_code)
         token = json.loads(result_access_token.text)
@@ -43,6 +45,7 @@ def await_for_access_token(interval, device_code):
                 break
         else:
             return token['access_token']
+    raise
 
 
 def get_parameters(token, category_id=LAPTOP_CATEGORY):

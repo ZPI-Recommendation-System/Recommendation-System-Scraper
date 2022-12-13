@@ -214,7 +214,7 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
         session.add(model_entity)
 
     print("Commit started...")
-    # session.commit()
+    session.commit()
     print("Commit finished!")
 
 

@@ -22,7 +22,7 @@ def run(while_scraping=False):
         from src.ml_module import evaluator
         evaluator.process()
         if not while_scraping:
-            websockets.emit_job_status(job='ml_label', status='ok', logs=['Operacja zakończona pomyślnie'])
+            websockets.emit_job_status(job='ml_label', status='finished', logs=['Operacja zakończona pomyślnie'])
         logging.info("Operacja zakończona pomyślnie")
     except FileNotFoundError as err:
         if while_scraping:
@@ -38,18 +38,6 @@ def run(while_scraping=False):
 
     websockets.isRunning = False
     websockets.job = ""
-
-if __name__ == "__main__":
-    run()
-
-def run(while_scraping=False):
-    try:
-        from src.ml_module import evaluator
-        evaluator.process()
-    except FileNotFoundError as err:
-        if while_scraping:
-            return
-        raise err
 
 if __name__ == "__main__":
     run(False)

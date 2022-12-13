@@ -7,14 +7,14 @@ from src.constants import BACKEND_URL, AUTH_TOKEN
 from src.pipeline import Pipeline
 
 JOB_SCRAPE = "scrapper.job.scrape"
-JOB_ML_LEARN = "scrapper.job.ml.learn"
-JOB_ML_LABEL = "scrapper.job.ml.label"
-JOB_CLEAR_DB = "scrapper.job.clear.db"
+JOB_ML_LEARN = "scrapper.job.ml_learn"
+JOB_ML_LABEL = "scrapper.job.ml_label"
+JOB_CLEAR_DB = "scrapper.job.clear_db"
 JOB_STATUS = "scrapper.job.status"
 
 SCRAPER_AUTH_REQUEST = 'scrapper.auth.request'
 SCRAPER_WORK_STATUS = 'scrapper.work.status'
-SCRAPER_STATUS_PING = 'scrapper.work.ping'
+SCRAPER_STATUS_PING = 'scrapper.status.ping'
 SCRAPER_WORK_CANCEL = 'scrapper.work.cancel'
 
 sio = socketio.Client()
@@ -42,57 +42,46 @@ isRunning = False
 job = ""
 
 @sio.on(SCRAPER_AUTH_REQUEST)
-@sio.on(JOB_SCRAPE)
-def scrape_request():
+def scrape_request(data):
+    logging.info("[Websocket] Otrzymano SCRAPER_AUTH_REQUEST")
     global isRunning, job, auth_link
+    if isRunning:
+        return {"status": "running", "jobName": job}
     isRunning = True
-    job = "scrape"
-    if pipeline.status == "running":
-        return {"status": "running", "auth_link": auth_link}
-    logging.info("[Websocket] Otrzymano scrapping_request")
-    auth_data = pipeline.api_auth()
-    Thread(target=pipeline.run, args=[auth_data]).start()
-    auth_link = auth_data['verification_uri_complete']
-    return {"status": "ok", "auth_link": auth_link}
-
-
-@sio.on(JOB_ML_LEARN)
-def ml_learn_request():
-    global isRunning, job
-    isRunning = True
-    job = "ml_learn"
-    from src import ml_learn
-    ml_learn.run()
-
-@sio.on(JOB_ML_LABEL)
-def ml_learn_request():
-    global isRunning, job
-    isRunning = True
-    job = "ml_label"
-    from src import ml_label
-    ml_label.run()
-
-@sio.on(JOB_CLEAR_DB)
-def ml_learn_request():
-    global isRunning, job
-    isRunning = True
-    job = "clear_db"
-    from src import clear_db
-    clear_db.run()
-
-def emit_scraper_status():
-    sio.emit(SCRAPER_WORK_STATUS, {'isRunning': isRunning, 'job': job}, callback = None)
+    job = data['jobName']
+    if job == "scraper":
+        if pipeline.status == "running":
+            return {"status": "running", "auth_link": auth_link}
+        auth_data = pipeline.api_auth()
+        Thread(target=pipeline.run, args=[auth_data]).start()
+        auth_link = auth_data['verification_uri_complete']
+        emit_job_status(job, "auth", [], payload={"link": auth_link})
+        return {"status": "ok", "auth_link": auth_link}
+    elif job == "ml_learn":
+        logging.info("[Websocket] Startowanie ML_LEARN")
+        from src import ml_learn
+        Thread(target=ml_learn.run(), args=[data['payload']]).start()
+        return {"status": "ok"}
+    elif job == "ml_label":
+        logging.info("[Websocket] Startowanie ML_LABEL")
+        from src import ml_label
+        Thread(target=ml_label.run(), args=[data['payload']]).start()
+        return {"status": "ok"}
+    elif job == "clear_db":
+        logging.info("[Websocket] Startowanie CLEAR_DB")
+        from src import clear_db
+        Thread(target=clear_db.run(), args=[data['payload']]).start()
 
 
 @sio.on(SCRAPER_STATUS_PING)
-def scraper_status():
+def status_ping_request(data):
     logging.info("[Websocket] Otrzymano SCRAPER_STATUS_PING")
-    emit_scraper_status()
+    emit_job_status(job, "running" if isRunning  else "ready", [])
 
 
 @sio.on(SCRAPER_WORK_CANCEL)
 def scrapping_cancel():
-    logging.info("[Websocket] Otrzymano scrapping_cancel")
+    logging.info("[Websocket] Otrzymano SCRAPER_WORK_CANCEL")
 
 
 @sio.event
@@ -110,7 +99,7 @@ def disconnect():
     logging.info("[Websocket] Odłączono od adresu " + BACKEND_URL)
 
 def emit_job_status(job: str, status: str, logs: list[str], payload=None, estimated_time=0, callback=None):
-    sio.emit(JOB_STATUS, {'job': job, 'status': status, 'logs': logs, 'payload': payload, "estimatedTime": estimated_time}, callback=callback)
+    sio.emit(JOB_STATUS, {'jobName': job, 'workStatus': status, 'logs': logs, 'payload': payload, "estimatedTime": estimated_time}, callback=callback)
 
 
 def start():

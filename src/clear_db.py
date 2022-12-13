@@ -21,7 +21,7 @@ def run():
     try:
         for entity in entities:
             num_rows_deleted = session.query(entity).delete()
-        emit_job_status(job='clear_db', status='ok', logs=['Operacja zakończona pomyślnie'])
+        emit_job_status(job='clear_db', status='finished', logs=['Operacja zakończona pomyślnie'])
         logging.info("Operacja zakończona pomyślnie")
     except:
         session.rollback()

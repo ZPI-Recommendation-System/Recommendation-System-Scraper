@@ -6,3 +6,4 @@ merge_refactor/__pycache__/
 *.xlsx
 *.txt
 !requirements.txt
+logs/*

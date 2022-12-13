@@ -2,7 +2,9 @@ import logging
 from datetime import timedelta, datetime
 from timeit import default_timer as timer
 
-from src import allegro_api, websockets, prefilter, postfilter, benchmarks, database, ml_label
+import pandas as pd
+
+from src import allegro_api, websockets, prefilter, postfilter, benchmarks, database, ml_label, set_prices
 
 
 class Pipeline:
@@ -28,28 +30,23 @@ class Pipeline:
 
         while access_token is None:
             try:
-                self.log("running", "Oczekiwanie na autoryzację...")
+                self.log("auth", "Oczekiwanie na autoryzację...")
+                websockets.emit_job_status("scraper", "auth", ["Oczekiwanie na autoryzację..."], payload={"link": auth_data['verification_uri_complete']})
                 access_token = allegro_api.auth2(auth_data)
                 if self.isWebsocket:
                     websockets.auth_link = ""
-                    websockets.emit_job_status("scrape",  "authorised", [], None)
+                    websockets.emit_job_status("scraper",  "authorised", [], None)
                 self.log(self.status, "Gotowe!")
             except Exception as err:
-                self.log("running", "Wystąpił błąd podczas autoryzacji: " + str(err))
-                if tries < 3:
-                    tries += 1
-                    self.log("running", "Ponawianie autoryzacji (próba nr " + str(tries) + ")...")
-                    continue
-                else:
-                    end = timer()
-                    time = str(timedelta(seconds=end - start))
-                    logging.error("Operacja autoryzacji zakończona błędem")
-                    logging.info("Czas trwania: " + time)
-                    if self.isWebsocket:
-                        websockets.emit_job_status("scrape",  "running", ["Operacja autoryzacji zakończona błędem"], None)
-                        websockets.emit_job_status("scrape",  "running", ["Czas trwania: " + time], None)
-                        websockets.emit_job_status("scrape",  "error", [], None)
-                    break
+                end = timer()
+                time = str(timedelta(seconds=end - start))
+                logging.error("Operacja autoryzacji zakończona błędem")
+                logging.info("Czas trwania: " + time)
+                if self.isWebsocket:
+                    websockets.emit_job_status("scraper",  "running", ["Operacja autoryzacji zakończona błędem"], None)
+                    websockets.emit_job_status("scraper",  "running", ["Czas trwania: " + time], None)
+                    websockets.emit_job_status("scraper",  "error", [], None)
+                break
 
         while access_token is not None:
             try:
@@ -68,6 +65,7 @@ class Pipeline:
                 self.log(self.status, "Gotowe!")
                 self.log(self.status, "Aktualizowanie bazy danych...")
                 database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
+                set_prices.run()
                 ml_label.run(True)
                 self.log(self.status, "Gotowe!")
                 end = timer()
@@ -75,7 +73,7 @@ class Pipeline:
                 logging.info("Operacja zakończona pomyślnie")
                 logging.info("Czas trwania: " + time)
                 if self.isWebsocket:
-                    websockets.emit_job_status("scrape",  "ok", ["Operacja zakończona pomyślnie", "Czas trwania: " + time], None)
+                    websockets.emit_job_status("scraper",  "finished", ["Operacja zakończona pomyślnie", "Czas trwania: " + time], None)
                 break
             except Exception as err:
                 self.log("running", "Wystąpił błąd: " + str(err))
@@ -89,9 +87,9 @@ class Pipeline:
                     logging.error("Operacja zakończona błędem")
                     logging.info("Czas trwania: " + time)
                     if self.isWebsocket:
-                        websockets.emit_job_status("scrape",  "running", ["Operacja zakończona błędem"], None)
-                        websockets.emit_job_status("scrape",  "running", ["Czas trwania: " + time], None)
-                        websockets.emit_job_status("scrape",  "error", [], None)
+                        websockets.emit_job_status("scraper",  "running", ["Operacja zakończona błędem"], None)
+                        websockets.emit_job_status("scraper",  "running", ["Czas trwania: " + time], None)
+                        websockets.emit_job_status("scraper",  "error", [], None)
                     break
 
         websockets.isRunning = False
@@ -99,7 +97,7 @@ class Pipeline:
         self.status = "ready"
         logging.info("[Scraper] Scraper jest gotowy do pracy")
         # if self.isWebsocket:
-        #     websockets.emit_job_status("scrape",  "ready", [], None)
+        #     websockets.emit_job_status("scraper",  "ready", [], None)
 
     def log(self, status, message):
         if status == "error":
@@ -108,7 +106,7 @@ class Pipeline:
             logging.info(message)
 
         if self.isWebsocket:
-            websockets.emit_job_status("scrape",  status, [message], None)
+            websockets.emit_job_status("scraper",  status, [message], None)
 
 
 if __name__ == "__main__":
