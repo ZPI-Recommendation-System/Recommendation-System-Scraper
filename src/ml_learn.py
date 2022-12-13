@@ -1,18 +1,21 @@
 import logging
 import os
 import sys
+from time import sleep
 
 from src import websockets
 from src.websockets import emit_job_status
 
 sys.path.append(os.path.join(os.getcwd(), "src/ml_module"))
 
-from src.ml_module import tree
+
+# from src.ml_module import tree
 def run():
     emit_job_status(job='ml_learn', status='running', logs=['Rozpoczęto operację uczenia modelu'])
     logging.info("Rozpoczęto operację uczenia modelu")
     try:
-        tree.process()
+        sleep(120)
+        # tree.process()
         emit_job_status(job='ml_learn', status='finished', logs=['Operacja zakończona pomyślnie'])
         logging.info("Operacja zakończona pomyślnie")
     except:
