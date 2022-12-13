@@ -51,8 +51,8 @@ class Pipeline:
         while access_token is not None:
             try:
                 self.log(self.status, "Pobieranie laptopów...")
-                # laptops = allegro_api.scrape(access_token)
-                laptops = pd.read_csv("resources/laptops_2.csv")
+                laptops = allegro_api.scrape(access_token)
+                # laptops = pd.read_csv("resources/laptops_2.csv")
                 self.log(self.status, "Gotowe!")
                 self.log(self.status, "Wstępne filtrowanie danych...")
                 prefiltered_laptops = prefilter.run_for(laptops)
@@ -64,7 +64,7 @@ class Pipeline:
                 cpu_benchmarks, gpu_benchmarks = benchmarks.get()
                 self.log(self.status, "Gotowe!")
                 self.log(self.status, "Aktualizowanie bazy danych...")
-                # database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
+                database.update(clear_laptops, cpu_benchmarks, gpu_benchmarks)
                 set_prices.run()
                 ml_label.run(True)
                 self.log(self.status, "Gotowe!")
