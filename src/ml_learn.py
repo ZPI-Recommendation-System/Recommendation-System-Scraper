@@ -12,7 +12,7 @@ def run():
     emit_job_status(job='ml_learn', status='running', logs=['Rozpoczęto operację uczenia modelu'])
     logging.info("Rozpoczęto operację uczenia modelu")
     try:
-        # tree.process()
+        tree.process()
         emit_job_status(job='ml_learn', status='finished', logs=['Operacja zakończona pomyślnie'])
         logging.info("Operacja zakończona pomyślnie")
     except:
