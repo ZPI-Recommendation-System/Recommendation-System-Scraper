@@ -99,19 +99,25 @@ def get_products(token, category_id=LAPTOP_CATEGORY, page_id=''):
         raise SystemExit(err)
 
 
-def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
+def get_all_products(access_token, parameters, category_id=LAPTOP_CATEGORY):
     all_products = []
     products_response = get_products(access_token, category_id)
     if products_response['products'] is not None:
         products = products_response['products']
-        all_products.append(products)
+        # all_products.append(products)
+        data = normalise_products(access_token, [products], parameters)
+        data = pd.DataFrame(data)
+        dump_to_csv(data)
     page_id = get_next_page(products_response)
     while page_id is not None:
         try:
             products_response = get_products(access_token, category_id, page_id)
             if 'products' in products_response and products_response['products'] is not None:
                 products = products_response['products']
-                all_products.append(products)
+                # all_products.append(products)
+                data = normalise_products(access_token, [products], parameters)
+                data = pd.DataFrame(data)
+                data.to_csv(OUTPUT_CSV, mode='a', header=False, index=False)
             page_id = get_next_page(products_response)
         except Exception as err:
             logging.error(str("Wystąpił błąd"), exc_info=True, stack_info=True)
@@ -189,10 +195,7 @@ def auth2(auth_data):
 
 def scrape(access_token):
     parameters = normalise_parameters(get_parameters(access_token, LAPTOP_CATEGORY))
-    products = get_all_products(access_token, LAPTOP_CATEGORY)
-    data = normalise_products(access_token, products, parameters)
-    data = pd.DataFrame(data)
-    dump_to_csv(data)
+    products = get_all_products(access_token, parameters, LAPTOP_CATEGORY)
     data = pd.read_csv(OUTPUT_CSV)
     return data
 
