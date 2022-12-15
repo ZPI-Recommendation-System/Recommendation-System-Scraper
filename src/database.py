@@ -201,8 +201,8 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
         model_entity.driveStorage = row['Pojemność dysku']
         model_entity.driveType = row['Typ dysku twardego']
         model_entity.hddSpeed = row['Prędkość obrotowa dysku HDD']
-        model_entity.price = row['price']
-        model_priceSource = row['priceSource']
+        model_entity.price = 0
+        model_priceSource = 'unknown'
         model_entity.processor_entity = processor_entity
         model_entity.graphics_entity = graphics_entity
         model_entity.screen_entity = screen_entity
