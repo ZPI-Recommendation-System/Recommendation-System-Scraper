@@ -114,7 +114,9 @@ def get_all_products(access_token, category_id=LAPTOP_CATEGORY):
                 all_products.append(products)
             page_id = get_next_page(products_response)
         except Exception as err:
+            logging.error(str("Wystąpił błąd"), exc_info=True, stack_info=True)
             logging.error(str(err), exc_info=True, stack_info=True)
+            logging.error(str("Jest to standardowy błąd przesyłu danych. Trwa jego obsługa..."), exc_info=True, stack_info=True)
             break
     return all_products
 
