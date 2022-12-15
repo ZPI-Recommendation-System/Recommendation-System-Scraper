@@ -91,7 +91,7 @@ def connect():
 
 @sio.event
 def connect_error(data):
-    logging.error("[Websocket] Brak połączenia z adresem " + BACKEND_URL)
+    logging.error("[Websocket] Oczekiwanie na połączenie z adresem " + BACKEND_URL)
 
 
 @sio.event
