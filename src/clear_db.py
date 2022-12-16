@@ -13,7 +13,7 @@ entities = [t_model_entity_communications_communication_entity, t_model_entity_c
 
 def run():
     emit_job_status(job='clear_db', status='running', logs=['Rozpoczęto operację czyszczenia bazy danych'])
-    logging.info("Rozpoczęto operację uczenia modelu")
+    logging.info("Rozpoczęto operację czyszczenia bazy danych")
     engine = create_engine(DATABASE_URL)
     engine.connect()
     Session = sessionmaker(bind=engine)
