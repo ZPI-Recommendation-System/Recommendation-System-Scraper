@@ -63,6 +63,8 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
     for index, row in laptops.iterrows():
         cpu_benchmark = cpu_benchmarks[row['Model procesora']]
         cpu_benchmark_entity = None if cpu_benchmark is None else added_cpu_benchmarks[cpu_benchmark.Benchmark.URL]
+        if cpu_benchmark_entity is None:
+            continue
         processor_entity = ProcessorEntity(
             model=row['Model procesora'],
             series=row['Seria procesora'],
@@ -75,6 +77,8 @@ def insert_all(session, laptops, cpu_benchmarks, gpu_benchmarks):
 
         gpu_benchmark = gpu_benchmarks[row['Model karty graficznej']]
         gpu_benchmark_entity = None if gpu_benchmark is None else added_gpu_benchmarks[gpu_benchmark.Benchmark.URL]
+        if gpu_benchmark_entity is None:
+            continue
         graphics_entity = GraphicsEntity(
             graphicsCardModel=row['Model karty graficznej'],
             graphicsCardType=row['Rodzaj karty graficznej'],
