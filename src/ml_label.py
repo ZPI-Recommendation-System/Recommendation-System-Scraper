@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.getcwd(), "src/ml_module"))
 def run(while_scraping=False):
     if not while_scraping:
         websockets.emit_job_status(job='ml_label', status='running', logs=['Rozpoczęto operację estymacji cen laptopów w bazie'])
-    logging.info("Rozpoczęto operację uczenia modelu")
+    logging.info("Rozpoczęto operację estymacji cen laptopów w bazie")
     try:
         from src.ml_module import evaluator
         evaluator.process()
